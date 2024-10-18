@@ -17,6 +17,7 @@ import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 import GoogleIcon from './GoogleIcon';
+import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
@@ -99,7 +100,9 @@ export default function JoySignInSideTemplate() {
               <IconButton variant="soft" color="primary" size="sm">
                 <BadgeRoundedIcon />
               </IconButton>
-              <Typography level="title-lg">Company logo</Typography>
+              <Typography level="title-lg">
+              <img src={logo} alt="SOLTICEM"  style={{ width: '180px', height: 'auto' }}/>
+              </Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
@@ -126,36 +129,20 @@ export default function JoySignInSideTemplate() {
               },
             }}
           >
-            <Stack sx={{ gap: 4, mb: 2 }}>
+            <Stack sx={{ gap: 4, mb: -2 }}>
               <Stack sx={{ gap: 1 }}>
                 <Typography component="h1" level="h3">
-                  Sign in
+                  Bienvenido!
                 </Typography>
                 <Typography level="body-sm">
-                  New to company?{' '}
-                  <Link href="#replace-with-a-link" level="title-sm">
+                  Ingresa con tus credenciales{' '}
+                  {/* <Link href="#replace-with-a-link" level="title-sm">
                     Sign up!
-                  </Link>
+                  </Link> */}
                 </Typography>
               </Stack>
-              <Button
-                variant="soft"
-                color="neutral"
-                fullWidth
-                startDecorator={<GoogleIcon />}
-              >
-                Continue with Google
-              </Button>
             </Stack>
-            <Divider
-              sx={(theme) => ({
-                [theme.getColorSchemeSelector('light')]: {
-                  color: { xs: '#FFF', md: 'text.tertiary' },
-                },
-              })}
-            >
-              or
-            </Divider>
+         
             <Stack sx={{ gap: 4, mt: 2 }}>
               <form
                 onSubmit={(event: React.FormEvent<SignInFormElement>) => {
@@ -170,11 +157,11 @@ export default function JoySignInSideTemplate() {
                 }}
               >
                 <FormControl required>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Usuario</FormLabel>
                   <Input type="email" name="email" />
                 </FormControl>
                 <FormControl required>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Contraseña</FormLabel>
                   <Input type="password" name="password" />
                 </FormControl>
                 <Stack sx={{ gap: 4, mt: 2 }}>
@@ -185,13 +172,13 @@ export default function JoySignInSideTemplate() {
                       alignItems: 'center',
                     }}
                   >
-                    <Checkbox size="sm" label="Remember me" name="persistent" />
+                    <Checkbox size="sm" label="Recordar credenciales" name="persistent" />
                     <Link level="title-sm" href="#replace-with-a-link">
-                      Forgot your password?
+                      {/* Forgot your password? */}
                     </Link>
                   </Box>
                   <Button type="submit" fullWidth>
-                    Sign in
+                    Ingresar
                   </Button>
                 </Stack>
               </form>
@@ -199,7 +186,7 @@ export default function JoySignInSideTemplate() {
           </Box>
           <Box component="footer" sx={{ py: 3 }}>
             <Typography level="body-xs" sx={{ textAlign: 'center' }}>
-              © Your company {new Date().getFullYear()}
+              © Copyright SOLTICEM {new Date().getFullYear()}
             </Typography>
           </Box>
         </Box>
