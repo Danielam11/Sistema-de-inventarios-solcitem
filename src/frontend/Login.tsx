@@ -5,7 +5,6 @@ import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
 import Checkbox from '@mui/joy/Checkbox';
-import Divider from '@mui/joy/Divider';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import IconButton, { IconButtonProps } from '@mui/joy/IconButton';
@@ -15,8 +14,6 @@ import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
-import GoogleIcon from './GoogleIcon';
 import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png'
 
 interface FormElements extends HTMLFormControlsCollection {
@@ -93,19 +90,32 @@ export default function JoySignInSideTemplate() {
           }}
         >
           <Box
-            component="header"
-            sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
-          >
-            <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-              <IconButton variant="soft" color="primary" size="sm">
-                <BadgeRoundedIcon />
-              </IconButton>
-              <Typography level="title-lg">
-              <img src={logo} alt="SOLTICEM"  style={{ width: '180px', height: 'auto' }}/>
-              </Typography>
-            </Box>
-            <ColorSchemeToggle />
-          </Box>
+  component="header"
+  sx={{ py: 3, display: 'flex', justifyContent: 'center' }} // Cambié "justifyContent" para centrar el logo
+>
+  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    <Typography level="title-lg">
+      <img 
+        src={logo} 
+        alt="SOLTICEM"  
+        style={{ 
+          width: '100%',  // El logo será 100% del contenedor padre
+          maxWidth: '310px', // El tamaño máximo será de 310px
+          height: 'auto', 
+          display: 'block', 
+          margin: '0 auto' // Centrado horizontalmente
+        }} 
+      />
+    </Typography>
+  </Box>
+  <Box sx={{ py: 3, display: 'flex', paddingLeft:'20px' }}>
+  <ColorSchemeToggle />
+  </Box>
+  
+</Box>
+
+
+
           <Box
             component="main"
             sx={{
@@ -177,7 +187,7 @@ export default function JoySignInSideTemplate() {
                       {/* Forgot your password? */}
                     </Link>
                   </Box>
-                  <Button type="submit" fullWidth>
+                  <Button type="submit" fullWidth >
                     Ingresar
                   </Button>
                 </Stack>
