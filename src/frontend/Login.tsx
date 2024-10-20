@@ -187,7 +187,11 @@ export default function JoySignInSideTemplate() {
                       {/* Forgot your password? */}
                     </Link>
                   </Box>
-                  <Button type="submit" fullWidth >
+                  <Button type="submit" fullWidth   sx={{
+                            '&:hover': {
+                              backgroundColor: '#86C824',
+                            }
+                          }}>
                     Ingresar
                   </Button>
                 </Stack>
@@ -217,10 +221,10 @@ export default function JoySignInSideTemplate() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundImage:
-            'url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)',
+            'url(https://www.extrasoft.es/wp-content/uploads/2022/10/5-TECNOLOGIAS-980x560.jpg)',
           [theme.getColorSchemeSelector('dark')]: {
             backgroundImage:
-              'url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)',
+              'url(https://fundacionih.es/wp-content/uploads/2024/04/tech-devices-icons-connected-digital-planet-earth-scaled.jpg)',
           },
         })}
       />
