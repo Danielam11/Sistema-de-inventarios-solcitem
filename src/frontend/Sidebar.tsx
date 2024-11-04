@@ -1,12 +1,11 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Avatar from '@mui/joy/Avatar';
 import Box from '@mui/joy/Box';
-
 import Divider from '@mui/joy/Divider';
 import IconButton from '@mui/joy/IconButton';
 import Input from '@mui/joy/Input';
-
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton, { listItemButtonClasses } from '@mui/joy/ListItemButton';
@@ -21,12 +20,11 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import QuestionAnswerRoundedIcon from '@mui/icons-material/QuestionAnswerRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
-
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
-
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import BrightnessAutoRoundedIcon from '@mui/icons-material/BrightnessAutoRounded';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import ShieldIcon from '@mui/icons-material/Shield';;
 
 import ColorSchemeToggle from './ColorSchemeToggle.tsx';
 import { closeSidebar } from './utils.ts';
@@ -125,7 +123,7 @@ export default function Sidebar() {
         <Typography level="title-lg">Solcitem</Typography>
         <ColorSchemeToggle sx={{ ml: 'auto' }} />
       </Box>
-      <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
+      <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Buscar" />
       <Box
         sx={{
           minHeight: 0,
@@ -138,146 +136,136 @@ export default function Sidebar() {
           },
         }}
       >
-        <List
-  size="sm"
-  sx={{
-    gap: 1, // Espacio uniforme entre los elementos de la lista
-    '--List-nestedInsetStart': '30px',
-    '--ListItem-radius': (theme) => theme.vars.radius.sm,
-  }}
->
-  <ListItem sx={{ mb: 1 }}> {/* Margen inferior para consistencia */}
-    <ListItemButton>
-      <HomeRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Products</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
-  
-  <ListItem sx={{ mb: 1 }}>
-    <ListItemButton >
-      <ShoppingCartRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Inventory</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
+        <List size="sm" sx={{ gap: 1, '--List-nestedInsetStart': '30px', '--ListItem-radius': (theme) => theme.vars.radius.sm }}>
+          <ListItem sx={{ mb: 1 }}>
+            <ListItemButton component={Link} to="/">
+              <HomeRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Products</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+          
+          <ListItem sx={{ mb: 1 }}>
+            <ListItemButton component={Link} to="/inventory">
+              <ShoppingCartRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Inventory</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
+          <ListItem sx={{ mb: 1 }}>
+            <ListItemButton component={Link} to="/clientes">
+              <DashboardRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Clientes</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
-  <ListItem sx={{ mb: 1 }}>
-    <ListItemButton>
-      <DashboardRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Clients</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
+          <ListItem sx={{ mb: 1 }}>
+            <ListItemButton component={Link} to="/sales">
+              <ShoppingCartRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Sales</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
-  <ListItem sx={{ mb: 1 }}>
-    <ListItemButton selected>
-      <ShoppingCartRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Sales</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
+          <ListItem nested>
+            <Toggler
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <AssignmentRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Orders</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[open ? { transform: 'rotate(180deg)' } : { transform: 'none' }]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5 }}>
+                <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/orders/all-tasks">All tasks</ListItemButton>
+                </ListItem>
+                <ListItem sx={{ mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/orders/backlog">Backlog</ListItemButton>
+                </ListItem>
+                <ListItem sx={{ mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/orders/in-progress">In progress</ListItemButton>
+                </ListItem>
+                <ListItem sx={{ mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/orders/done">Done</ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
 
-  <ListItem nested>
-    <Toggler
-      renderToggle={({ open, setOpen }) => (
-        <ListItemButton onClick={() => setOpen(!open)}>
-          <AssignmentRoundedIcon />
-          <ListItemContent>
-            <Typography level="title-sm">Orders</Typography>
-          </ListItemContent>
-          <KeyboardArrowDownIcon
-            sx={[open ? { transform: 'rotate(180deg)' } : { transform: 'none' }]}
-          />
-        </ListItemButton>
-      )}
-    >
-      <List sx={{ gap: 0.5 }}>
-        <ListItem sx={{ mt: 0.5, mb: 0.5 }}> {/* Espacio intermedio */}
-          <ListItemButton>All tasks</ListItemButton>
-        </ListItem>
-        <ListItem sx={{ mb: 0.5 }}>
-          <ListItemButton>Backlog</ListItemButton>
-        </ListItem>
-        <ListItem sx={{ mb: 0.5 }}>
-          <ListItemButton>In progress</ListItemButton>
-        </ListItem>
-        <ListItem sx={{ mb: 0.5 }}>
-          <ListItemButton>Done</ListItemButton>
-        </ListItem>
-      </List>
-    </Toggler>
-  </ListItem>
+          <ListItem sx={{ mb: 1 }}>
+            <ListItemButton component={Link} to="/suppliers">
+              <QuestionAnswerRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Suppliers</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
-  <ListItem sx={{ mb: 1 }}>
-    <ListItemButton
-      role="menuitem"
-      component="a"
-      href="/joy-ui/getting-started/templates/messages/"
-    >
-      <QuestionAnswerRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Suppliers</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
+          <ListItem nested>
+            <Toggler
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <GroupRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Users</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[open ? { transform: 'rotate(180deg)' } : { transform: 'none' }]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5 }}>
+                <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/users/profile">My profile</ListItemButton>
+                </ListItem>
+                <ListItem sx={{ mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/users/new">Create a new user</ListItemButton>
+                </ListItem>
+                <ListItem sx={{ mb: 0.5 }}>
+                  <ListItemButton component={Link} to="/users/roles">Roles & permissions</ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
 
-  <ListItem nested>
-    <Toggler
-      renderToggle={({ open, setOpen }) => (
-        <ListItemButton onClick={() => setOpen(!open)}>
-          <GroupRoundedIcon />
-          <ListItemContent>
-            <Typography level="title-sm">Users</Typography>
-          </ListItemContent>
-          <KeyboardArrowDownIcon
-            sx={[open ? { transform: 'rotate(180deg)' } : { transform: 'none' }]}
-          />
-        </ListItemButton>
-      )}
-    >
-      <List sx={{ gap: 0.5 }}>
-        <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
-          <ListItemButton
-            role="menuitem"
-            component="a"
-            href="/joy-ui/getting-started/templates/profile-dashboard/"
-          >
-            My profile
-          </ListItemButton>
-        </ListItem>
-        <ListItem sx={{ mb: 0.5 }}>
-          <ListItemButton>Create a new user</ListItemButton>
-        </ListItem>
-        <ListItem sx={{ mb: 0.5 }}>
-          <ListItemButton>Roles & permission</ListItemButton>
-        </ListItem>
-      </List>
-    </Toggler>
-  </ListItem>
-  <ListItem sx={{ mb: 0 }}>
-    <ListItemButton>
-      <ShoppingCartRoundedIcon />
-      <ListItemContent>
-        <Typography level="title-sm">Cash</Typography>
-      </ListItemContent>
-    </ListItemButton>
-  </ListItem>
-  <ListItem sx={{ mb: 0 }}> {/* Margen inferior para consistencia */}
-    <ListItemButton>
-      <SettingsRoundedIcon />
-      Settings
-    </ListItemButton>
-  </ListItem>
-</List>
+          <ListItem sx={{ mb: 0 }}>
+            <ListItemButton component={Link} to="/cash">
+              <ShoppingCartRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Cash</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
+          <ListItem sx={{ mb: 0 }}>
+            <ListItemButton component={Link} to="/seguridad">
+            <ShieldIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Seguridad</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
 
-        
+          <ListItem sx={{ mb: 0 }}>
+            <ListItemButton component={Link} to="/settings">
+              <SettingsRoundedIcon />
+              Settings
+            </ListItemButton>
+          </ListItem>
+        </List>
       </Box>
       <Divider />
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>

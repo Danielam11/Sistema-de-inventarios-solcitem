@@ -1,7 +1,7 @@
-
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Button from '@mui/joy/Button';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -11,92 +11,137 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 
-import Sidebar from './Sidebar';
 import OrderTable from './OrderTable';
-import OrderList from './OrderList';
+import ClientTable from './ClientTable';
+import Sidebar from './Sidebar';
 import Header from './Header';
+
+interface RouteDetails {
+  [key: string]: {
+    title: string;
+    buttonText: string;
+    breadcrumb: string[];
+  };
+}
+
+function MainContent() {
+  const location = useLocation();
+
+  // Mapeo de rutas a títulos, botones y breadcrumbs
+  const routeDetails: RouteDetails = {
+    '/': {
+      title: 'Sales',
+      buttonText: 'Add new order',
+      breadcrumb: ['Dashboard', 'Orders'],
+    },
+    '/clientes': {
+      title: 'Clientes',
+      buttonText: 'Añadir nuevo cliente',
+      breadcrumb: ['Dashboard', 'Clientes'],
+    },
+    // Añade más rutas según sea necesario
+  };
+
+  // Determina los detalles según la ruta actual
+  const currentRoute = routeDetails[location.pathname] || {
+    title: 'Page',
+    buttonText: 'Action',
+    breadcrumb: ['Dashboard'],
+  };
+
+  return (
+    <Box
+      component="main"
+      className="MainContent"
+      sx={{
+        px: { xs: 2, md: 6 },
+        pt: {
+          xs: 'calc(12px + var(--Header-height))',
+          sm: 'calc(12px + var(--Header-height))',
+          md: 3,
+        },
+        pb: { xs: 2, sm: 2, md: 3 },
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        height: '100dvh',
+        gap: 1,
+      }}
+    >
+      {/* Header dinámico con breadcrumbs */}
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Breadcrumbs
+          size="sm"
+          aria-label="breadcrumbs"
+          separator={<ChevronRightRoundedIcon fontSize="small" />}
+          sx={{ pl: 0 }}
+        >
+          <Link
+            underline="none"
+            color="neutral"
+            href="/"
+            aria-label="Home"
+          >
+            <HomeRoundedIcon />
+          </Link>
+          {currentRoute.breadcrumb.map((crumb, index) => (
+            <Link
+              key={index}
+              underline={index === currentRoute.breadcrumb.length - 1 ? 'none' : 'hover'}
+              color={index === currentRoute.breadcrumb.length - 1 ? 'primary' : 'neutral'}
+              href={index === currentRoute.breadcrumb.length - 1 ? undefined : '#some-link'}
+              sx={{ fontSize: 12, fontWeight: 500 }}
+            >
+              {crumb}
+            </Link>
+          ))}
+        </Breadcrumbs>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          mb: 1,
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'start', sm: 'center' },
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography level="h2" component="h1">
+          {currentRoute.title}
+        </Typography>
+        <Button
+          color="primary"
+          startDecorator={<DownloadRoundedIcon />}
+          size="sm"
+        >
+          {currentRoute.buttonText}
+        </Button>
+      </Box>
+
+      <Routes>
+        <Route path="/" element={<OrderTable />} />
+        <Route path="/clientes" element={<ClientTable />} />
+        {/* Añade más rutas aquí según tus componentes */}
+      </Routes>
+    </Box>
+  );
+}
 
 export default function JoyOrderDashboardTemplate() {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-        <Header />
-        <Sidebar />
-        <Box
-          component="main"
-          className="MainContent"
-          sx={{
-            px: { xs: 2, md: 6 },
-            pt: {
-              xs: 'calc(12px + var(--Header-height))',
-              sm: 'calc(12px + var(--Header-height))',
-              md: 3,
-            },
-            pb: { xs: 2, sm: 2, md: 3 },
-            flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            minWidth: 0,
-            height: '100dvh',
-            gap: 1,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Breadcrumbs
-              size="sm"
-              aria-label="breadcrumbs"
-              separator={<ChevronRightRoundedIcon fontSize="small" />}
-              sx={{ pl: 0 }}
-            >
-              <Link
-                underline="none"
-                color="neutral"
-                href="#some-link"
-                aria-label="Home"
-              >
-                <HomeRoundedIcon />
-              </Link>
-              <Link
-                underline="hover"
-                color="neutral"
-                href="#some-link"
-                sx={{ fontSize: 12, fontWeight: 500 }}
-              >
-                Dashboard
-              </Link>
-              <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-                Orders
-              </Typography>
-            </Breadcrumbs>
-          </Box>
-          <Box
-            sx={{
-              display: 'flex',
-              mb: 1,
-              gap: 1,
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: { xs: 'start', sm: 'center' },
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Typography level="h2" component="h1">
-              Sales
-            </Typography>
-            <Button
-              color="primary"
-              startDecorator={<DownloadRoundedIcon />}
-              size="sm"
-            >
-              Add new order
-            </Button>
-          </Box>
-          <OrderTable />
-          <OrderList />
+      <Router>
+        <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+          <Header />
+          <Sidebar />
+          <MainContent />
         </Box>
-      </Box>
+      </Router>
     </CssVarsProvider>
   );
 }
-      
