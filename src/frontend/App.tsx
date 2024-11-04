@@ -1,7 +1,7 @@
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Button from '@mui/joy/Button';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -15,6 +15,9 @@ import OrderTable from './OrderTable';
 import ClientTable from './ClientTable';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Login from './Login'; // Importa el componente de Login
+
+import { useState } from 'react';
 
 interface RouteDetails {
   [key: string]: {
@@ -132,15 +135,23 @@ function MainContent() {
 }
 
 export default function JoyOrderDashboardTemplate() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false); // Estado para manejar autenticación
+
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
       <Router>
-        <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-          <Header />
-          <Sidebar />
-          <MainContent />
-        </Box>
+        {isAuthenticated ? (
+          <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+            <Header />
+            <Sidebar />
+            <MainContent />
+          </Box>
+        ) : (
+          <Routes>
+            <Route path="*" element={<Login onLogin={() => setIsAuthenticated(true)} />} />
+          </Routes>
+        )}
       </Router>
     </CssVarsProvider>
   );
