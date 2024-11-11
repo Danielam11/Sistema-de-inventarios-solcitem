@@ -1,10 +1,15 @@
 const pool = require("../config/db.js");
 const express = require("express");
 const userRoutes = require("../route/userRoute.js");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
-
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Permite conexiones solo desde este origen
+  })
+);
 app.use("/api", userRoutes);
 
 // Función para iniciar el servidor
