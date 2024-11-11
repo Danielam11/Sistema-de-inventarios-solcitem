@@ -17,7 +17,7 @@ import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 
-import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
+import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png'
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
@@ -26,10 +26,6 @@ interface FormElements extends HTMLFormControlsCollection {
 }
 interface SignInFormElement extends HTMLFormElement {
   readonly elements: FormElements;
-}
-
-interface LoginProps {
-  onLogin: () => void; // Define la prop onLogin
 }
 
 function ColorSchemeToggle(props: IconButtonProps) {
@@ -59,7 +55,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
 // Cambia aquí
 const customTheme = extendTheme({ colorSchemes: { dark: { palette: { mode: 'dark' } } } });
 
-export default function JoySignInSideTemplate({ onLogin }: LoginProps) {
+export default function JoySignInSideTemplate() {
   return (
     <CssVarsProvider theme={customTheme} disableTransitionOnChange>
       <CssBaseline />
@@ -105,7 +101,7 @@ export default function JoySignInSideTemplate({ onLogin }: LoginProps) {
                 <BadgeRoundedIcon />
               </IconButton>
               <Typography level="title-lg">
-                <img src={logo} alt="SOLTICEM" style={{ width: '180px', height: 'auto' }} />
+              <img src={logo} alt="SOLTICEM"  style={{ width: '180px', height: 'auto' }}/>
               </Typography>
             </Box>
             <ColorSchemeToggle />
@@ -139,25 +135,25 @@ export default function JoySignInSideTemplate({ onLogin }: LoginProps) {
                   Bienvenido!
                 </Typography>
                 <Typography level="body-sm">
-                  Ingresa con tus credenciales
+                  Ingresa con tus credenciales{' '}
+                  {/* <Link href="#replace-with-a-link" level="title-sm">
+                    Sign up!
+                  </Link> */}
                 </Typography>
               </Stack>
             </Stack>
-
+         
             <Stack sx={{ gap: 4, mt: 2 }}>
               <form
                 onSubmit={(event: React.FormEvent<SignInFormElement>) => {
                   event.preventDefault();
                   const formElements = event.currentTarget.elements;
-                  const email = formElements.email.value;
-                  const password = formElements.password.value;
-
-                  // Verifica las credenciales
-                  if (email === 'jamerar@puce.edu.ec' && password === '1234') {
-                    onLogin(); // Llama a onLogin si las credenciales son correctas
-                  } else {
-                    alert('Credenciales incorrectas');
-                  }
+                  const data = {
+                    email: formElements.email.value,
+                    password: formElements.password.value,
+                    persistent: formElements.persistent.checked,
+                  };
+                  alert(JSON.stringify(data, null, 2));
                 }}
               >
                 <FormControl required>
@@ -177,7 +173,9 @@ export default function JoySignInSideTemplate({ onLogin }: LoginProps) {
                     }}
                   >
                     <Checkbox size="sm" label="Recordar credenciales" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link"></Link>
+                    <Link level="title-sm" href="#replace-with-a-link">
+                      {/* Forgot your password? */}
+                    </Link>
                   </Box>
                   <Button type="submit" fullWidth>
                     Ingresar
@@ -209,10 +207,10 @@ export default function JoySignInSideTemplate({ onLogin }: LoginProps) {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundImage:
-            'url(https://www.extrasoft.es/wp-content/uploads/2022/10/5-TECNOLOGIAS-980x560.jpg)',
+            'url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)',
           [theme.getColorSchemeSelector('dark')]: {
             backgroundImage:
-              'url(https://fundacionih.es/wp-content/uploads/2024/04/tech-devices-icons-connected-digital-planet-earth-scaled.jpg)',
+              'url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)',
           },
         })}
       />
