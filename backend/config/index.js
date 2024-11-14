@@ -1,7 +1,9 @@
 const pool = require("../config/db.js");
 const express = require("express");
 const userRoutes = require("../route/userRoute.js");
+const clientRoutes = require("../route/clientRoute.js");
 const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
@@ -10,7 +12,8 @@ app.use(
     origin: "http://localhost:5173", // Permite conexiones solo desde este origen
   })
 );
-app.use("/api", userRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/clients", clientRoutes);
 
 // Función para iniciar el servidor
 async function iniciar() {
