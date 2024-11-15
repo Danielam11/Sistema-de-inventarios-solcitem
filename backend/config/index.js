@@ -2,6 +2,7 @@ const pool = require("../config/db.js");
 const express = require("express");
 const userRoutes = require("../route/userRoute.js");
 const clientRoutes = require("../route/clientRoute.js");
+const supplierRoutes = require("../route/supplierRoute.js");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ app.use(
 );
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
+app.use("/api/suppliers", supplierRoutes);
 
 // Función para iniciar el servidor
 async function iniciar() {
