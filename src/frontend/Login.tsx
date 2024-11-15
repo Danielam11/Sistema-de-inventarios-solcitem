@@ -5,7 +5,6 @@ import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
 import Checkbox from '@mui/joy/Checkbox';
-
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import IconButton, { IconButtonProps } from '@mui/joy/IconButton';
@@ -17,11 +16,12 @@ import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 
-import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png'
+
+import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
-  password: HTMLInputElement;
+  contrasena: HTMLInputElement;
   persistent: HTMLInputElement;
 }
 interface SignInFormElement extends HTMLFormElement {
@@ -52,10 +52,46 @@ function ColorSchemeToggle(props: IconButtonProps) {
   );
 }
 
-// Cambia aquí
 const customTheme = extendTheme({ colorSchemes: { dark: { palette: { mode: 'dark' } } } });
 
 export default function JoySignInSideTemplate() {
+  
+
+  const handleSubmit = async (event: React.FormEvent<SignInFormElement>) => {
+    event.preventDefault();
+    const formElements = event.currentTarget.elements;
+    const data = {
+      email: formElements.email.value,
+      contrasena: formElements.contrasena.value,
+      persistent: formElements.persistent.checked,
+    };
+
+    try {
+      const response = await fetch('http://localhost:3000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.message);
+        return;
+      }
+
+      const responseData = await response.json();
+      alert(`Token: ${responseData.token}`);
+      // Guardamos el token en localStorage o sessionStorage
+      localStorage.setItem('token', responseData.token);
+      // Aquí navegamos a la ruta correcta
+    } catch (error) {
+      console.error('Error en la autenticación:', error);
+      alert('Error en el servidor, por favor intenta más tarde.');
+    }
+  };
+
   return (
     <CssVarsProvider theme={customTheme} disableTransitionOnChange>
       <CssBaseline />
@@ -101,7 +137,7 @@ export default function JoySignInSideTemplate() {
                 <BadgeRoundedIcon />
               </IconButton>
               <Typography level="title-lg">
-              <img src={logo} alt="SOLTICEM"  style={{ width: '180px', height: 'auto' }}/>
+                <img src={logo} alt="SOLTICEM" style={{ width: '180px', height: 'auto' }} />
               </Typography>
             </Box>
             <ColorSchemeToggle />
@@ -135,34 +171,20 @@ export default function JoySignInSideTemplate() {
                   Bienvenido!
                 </Typography>
                 <Typography level="body-sm">
-                  Ingresa con tus credenciales{' '}
-                  {/* <Link href="#replace-with-a-link" level="title-sm">
-                    Sign up!
-                  </Link> */}
+                  Ingresa con tus credenciales
                 </Typography>
               </Stack>
             </Stack>
-         
+
             <Stack sx={{ gap: 4, mt: 2 }}>
-              <form
-                onSubmit={(event: React.FormEvent<SignInFormElement>) => {
-                  event.preventDefault();
-                  const formElements = event.currentTarget.elements;
-                  const data = {
-                    email: formElements.email.value,
-                    password: formElements.password.value,
-                    persistent: formElements.persistent.checked,
-                  };
-                  alert(JSON.stringify(data, null, 2));
-                }}
-              >
+              <form onSubmit={handleSubmit}>
                 <FormControl required>
                   <FormLabel>Usuario</FormLabel>
                   <Input type="email" name="email" />
                 </FormControl>
                 <FormControl required>
                   <FormLabel>Contraseña</FormLabel>
-                  <Input type="password" name="password" />
+                  <Input type="password" name="contrasena" />
                 </FormControl>
                 <Stack sx={{ gap: 4, mt: 2 }}>
                   <Box
