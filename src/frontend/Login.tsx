@@ -21,7 +21,7 @@ import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
-  contrasena: HTMLInputElement;
+  password: HTMLInputElement;
   persistent: HTMLInputElement;
 }
 interface SignInFormElement extends HTMLFormElement {
@@ -62,7 +62,7 @@ export default function JoySignInSideTemplate() {
     const formElements = event.currentTarget.elements;
     const data = {
       email: formElements.email.value,
-      contrasena: formElements.contrasena.value,
+      password: formElements.password.value,
       persistent: formElements.persistent.checked,
     };
 

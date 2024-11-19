@@ -35,3 +35,21 @@ async function updateSupplier(
   );
   return rows[0];
 }
+
+async function deleteSupplier(supplierId) {
+  try {
+    await pool.query("DELETE FROM Proveedores WHERE proveedor_id = $1", [
+      supplierId,
+    ]);
+  } catch (error) {
+    throw error;
+  }
+}
+
+module.exports = {
+  getAllSuppliers,
+  getSupplierById,
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+};

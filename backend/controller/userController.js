@@ -15,7 +15,7 @@ async function getUsers(req, res) {
 }
 
 async function registerUser(req, res) {
-  const { email, contrasena, rol } = req.body;
+  const { email, password, rol } = req.body;
 
   const existingUser = await userModel.getUserByEmail(email);
   if (existingUser) {
@@ -26,14 +26,14 @@ async function registerUser(req, res) {
 
   // Encriptamos la contraseña antes de guardarla
   const salt = await bcrypt.genSalt(10); // Generamos el salt
-  const hashedPassword = await bcrypt.hash(contrasena, salt); // Encriptamos la contraseña
+  const hashedPassword = await bcrypt.hash(password, salt); // Encriptamos la contraseña
 
   try {
     // Guardar el nuevo usuario en la base de datos
     const newUser = await userModel.createUser(email, hashedPassword, rol);
     res.status(201).json({
       message: "Usuario registrado exitosamente",
-      userId: newUser.usuario_id,
+      userId: newUser.user_id,
     });
   } catch (error) {
     console.error("Error al registrar el usuario", error);
@@ -42,7 +42,7 @@ async function registerUser(req, res) {
 }
 
 async function loginUser(req, res) {
-  const { email, contrasena } = req.body;
+  const { email, password } = req.body;
   console.log(req.body);
 
   try {
@@ -51,20 +51,20 @@ async function loginUser(req, res) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
     // Comparamos la contraseña ingresada con la contraseña encriptada en la base de datos
-    const isPasswordValid = await bcrypt.compare(contrasena, user.contrasena);
+    const isPasswordValid = await bcrypt.compare(password, user.contrasena);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
     console.log("Clave secreta JWT:", process.env.JWT_SECRET);
     // Generamos un token JWT
-    const token = jwt.sign({ userId: user.usuario_id }, "miCl4v3$3cR3tA!2024", {
+    const token = jwt.sign({ userId: user.user_id }, "miCl4v3$3cR3tA!2024", {
       expiresIn: "1h",
     });
 
     res.status(200).json({
       message: "Login exitoso",
       token, // Devuelve el token generado
-      userId: user.usuario_id, // Asegúrate de devolver el campo correcto
+      userId: user.user_id, // Asegúrate de devolver el campo correcto
     });
   } catch (error) {
     console.error("Error al iniciar sesión", error);
@@ -73,21 +73,21 @@ async function loginUser(req, res) {
 }
 
 async function editUser(req, res) {
-  const { usuario_id } = req.params; // Recibimos el ID del usuario que queremos editar
-  const { email, contrasena, rol } = req.body;
+  const { user_id } = req.params; // Recibimos el ID del usuario que queremos editar
+  const { email, password, rol } = req.body;
 
   try {
     // Verificamos si el usuario existe
-    const user = await userModel.getUserById(usuario_id);
+    const user = await userModel.getUserById(user_id);
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     // Actualizamos los datos del usuario en la base de datos
     const updatedUser = await userModel.updateUser(
-      usuario_id,
+      user_id,
       email,
-      contrasena,
+      password,
       rol
     );
     res
@@ -100,17 +100,17 @@ async function editUser(req, res) {
 }
 
 async function deleteUser(req, res) {
-  const { usuario_id } = req.params; // Recibimos el ID del usuario que queremos eliminar
+  const { user_id } = req.params; // Recibimos el ID del usuario que queremos eliminar
 
   try {
     // Verificamos si el usuario existe
-    const user = await userModel.getUserById(usuario_id);
+    const user = await userModel.getUserById(user_id);
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
     // Eliminamos el usuario de la base de datos
-    await userModel.deleteUser(usuario_id);
+    await userModel.deleteUser(user_id);
     res.status(200).json({ message: "Usuario eliminado exitosamente" });
   } catch (error) {
     console.error("Error al eliminar el usuario", error);
