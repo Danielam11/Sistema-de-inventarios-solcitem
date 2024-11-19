@@ -14,7 +14,6 @@ import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 
 
 import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
@@ -65,6 +64,8 @@ export default function JoySignInSideTemplate() {
       password: formElements.password.value,
       persistent: formElements.persistent.checked,
     };
+  
+    console.log(data);
 
     try {
       const response = await fetch('http://localhost:3000/api/users/login', {
@@ -129,19 +130,34 @@ export default function JoySignInSideTemplate() {
           }}
         >
           <Box
-            component="header"
-            sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
+          component="header"
+          sx={{ 
+            py: 3, 
+            position: 'relative', 
+            display: 'flex', 
+            alignItems: 'center', 
+          }}
+        >
+          {/* Logo centrado */}
+          <Box 
+            sx={{ 
+              position: 'absolute', 
+              left: '50%', 
+              top:'50%',
+              transform: 'translateX(-50%)', 
+            }}
           >
-            <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-              <IconButton variant="soft" color="primary" size="sm">
-                <BadgeRoundedIcon />
-              </IconButton>
-              <Typography level="title-lg">
-                <img src={logo} alt="SOLTICEM" style={{ width: '180px', height: 'auto' }} />
-              </Typography>
-            </Box>
+            <Typography level="title-lg">
+              <img src={logo} alt="SOLTICEM" style={{ width: '275px', height: 'auto' }} />
+            </Typography>
+          </Box>
+          
+          {/* Toggle alineado a la derecha */}
+          <Box sx={{ ml: 'auto'  }}>
             <ColorSchemeToggle />
           </Box>
+        </Box>
+
           <Box
             component="main"
             sx={{
@@ -177,33 +193,34 @@ export default function JoySignInSideTemplate() {
             </Stack>
 
             <Stack sx={{ gap: 4, mt: 2 }}>
-              <form onSubmit={handleSubmit}>
-                <FormControl required>
-                  <FormLabel>Usuario</FormLabel>
-                  <Input type="email" name="email" />
-                </FormControl>
-                <FormControl required>
-                  <FormLabel>Contraseña</FormLabel>
-                  <Input type="password" name="contrasena" />
-                </FormControl>
-                <Stack sx={{ gap: 4, mt: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Checkbox size="sm" label="Recordar credenciales" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link">
-                      {/* Forgot your password? */}
-                    </Link>
-                  </Box>
-                  <Button type="submit" fullWidth>
-                    Ingresar
-                  </Button>
-                </Stack>
-              </form>
+            <form onSubmit={handleSubmit}>
+          <FormControl required>
+            <FormLabel>Usuario</FormLabel>
+            <Input type="email" name="email" />
+          </FormControl>
+          <FormControl required>
+            <FormLabel>Contraseña</FormLabel>
+            <Input type="password" name="password" /> {/* Cambiado de "contrasena" a "password" */}
+          </FormControl>
+          <Stack sx={{ gap: 4, mt: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Checkbox size="sm" label="Recordar credenciales" name="persistent" />
+              <Link level="title-sm" href="#replace-with-a-link">
+                {/* Forgot your password? */}
+              </Link>
+            </Box>
+            <Button type="submit" fullWidth>
+              Ingresar
+            </Button>
+          </Stack>
+        </form>
+
             </Stack>
           </Box>
           <Box component="footer" sx={{ py: 3 }}>
@@ -229,10 +246,10 @@ export default function JoySignInSideTemplate() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundImage:
-            'url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)',
+           'url(https://www.extrasoft.es/wp-content/uploads/2022/10/5-TECNOLOGIAS-980x560.jpg)',
           [theme.getColorSchemeSelector('dark')]: {
             backgroundImage:
-              'url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)',
+            'url(https://fundacionih.es/wp-content/uploads/2024/04/tech-devices-icons-connected-digital-planet-earth-scaled.jpg)',
           },
         })}
       />
