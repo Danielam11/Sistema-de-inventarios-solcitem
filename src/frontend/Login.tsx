@@ -184,7 +184,7 @@ export default function JoySignInSideTemplate() {
                 </FormControl>
                 <FormControl required>
                   <FormLabel>Contraseña</FormLabel>
-                  <Input type="password" name="contrasena" />
+                  <Input type="password" name="password" />
                 </FormControl>
                 <Stack sx={{ gap: 4, mt: 2 }}>
                   <Box

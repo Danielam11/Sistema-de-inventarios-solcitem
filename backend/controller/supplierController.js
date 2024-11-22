@@ -1,6 +1,5 @@
 const supplierModel = require("../model/supplierModel");
 
-// Obtener todos los proveedores
 async function getAllSuppliers(req, res) {
   try {
     const suppliers = await supplierModel.getAllSuppliers();
@@ -11,7 +10,6 @@ async function getAllSuppliers(req, res) {
   }
 }
 
-// Obtener un proveedor por ID
 async function getSupplierById(req, res) {
   const id = req.params.id;
 
@@ -27,7 +25,6 @@ async function getSupplierById(req, res) {
   }
 }
 
-// Crear un nuevo proveedor
 async function createSupplier(req, res) {
   const { identification, name, address, phone, email } = req.body;
 
@@ -49,7 +46,6 @@ async function createSupplier(req, res) {
   }
 }
 
-// Actualizar un proveedor
 async function updateSupplier(req, res) {
   const id = req.params.id;
   const { identification, name, address, phone, email } = req.body;
@@ -76,7 +72,6 @@ async function updateSupplier(req, res) {
   }
 }
 
-// Eliminar un proveedor
 async function deleteSupplier(req, res) {
   const id = req.params.id;
 

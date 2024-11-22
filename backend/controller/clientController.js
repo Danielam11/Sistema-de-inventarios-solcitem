@@ -1,6 +1,5 @@
 const clientModel = require("../model/clientModel");
 
-// Get all clients
 async function getAllClients(req, res) {
   try {
     const clients = await clientModel.getAllClients();
@@ -11,9 +10,8 @@ async function getAllClients(req, res) {
   }
 }
 
-// Get client by ID
 async function getClientById(req, res) {
-  const { id } = req.params; // Recibimos el ID del cliente que queremos obtener
+  const { id } = req.params;
   try {
     const client = await clientModel.getClientById(id);
     if (!client) {
@@ -26,11 +24,9 @@ async function getClientById(req, res) {
   }
 }
 
-// Create a new client
 async function createClient(req, res) {
   const { identificacion, nombre, direccion, telefono, email } = req.body;
 
-  // Verificamos si el cliente ya existe
   const existingClient = await clientModel.getClientById(identificacion);
   if (existingClient) {
     return res.status(400).json({ error: "El cliente ya está registrado" });
@@ -54,19 +50,16 @@ async function createClient(req, res) {
   }
 }
 
-// Update an existing client
 async function updateClient(req, res) {
-  const { id } = req.params; // Recibimos el ID del cliente que queremos actualizar
+  const { id } = req.params;
   const { identificacion, nombre, direccion, telefono, email } = req.body;
 
   try {
-    // Verificamos si el cliente existe
     const client = await clientModel.getClientById(id);
     if (!client) {
       return res.status(404).json({ error: "Cliente no encontrado" });
     }
 
-    // Actualizamos el cliente en la base de datos
     const updatedClient = await clientModel.updateClient(
       id,
       identificacion,
@@ -85,18 +78,15 @@ async function updateClient(req, res) {
   }
 }
 
-// Delete a client
 async function deleteClient(req, res) {
-  const { id } = req.params; // Recibimos el ID del cliente que queremos eliminar
+  const { id } = req.params;
 
   try {
-    // Verificamos si el cliente existe
     const client = await clientModel.getClientById(id);
     if (!client) {
       return res.status(404).json({ error: "Cliente no encontrado" });
     }
 
-    // Eliminamos el cliente de la base de datos
     await clientModel.deleteClient(id);
     res.status(200).json({ message: "Cliente eliminado exitosamente" });
   } catch (error) {

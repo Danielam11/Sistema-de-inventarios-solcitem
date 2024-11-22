@@ -3,6 +3,8 @@ const express = require("express");
 const userRoutes = require("../route/userRoute.js");
 const clientRoutes = require("../route/clientRoute.js");
 const supplierRoutes = require("../route/supplierRoute.js");
+const brandRoutes = require("../route/brandRoute.js");
+const modelRoutes = require("../route/modelRoute.js");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -16,6 +18,8 @@ app.use(
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/suppliers", supplierRoutes);
+app.use("/api/brands", brandRoutes);
+app.use("/api/models", modelRoutes);
 
 // Función para iniciar el servidor
 async function iniciar() {
