@@ -1,7 +1,7 @@
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom'; // NO se importa Router
 import Button from '@mui/joy/Button';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -27,22 +27,19 @@ interface RouteDetails {
 function MainContent() {
   const location = useLocation();
 
-  // Mapeo de rutas a títulos, botones y breadcrumbs
   const routeDetails: RouteDetails = {
-    '/': {
+    '/dashboard': {
       title: 'Sales',
       buttonText: 'Add new order',
       breadcrumb: ['Dashboard', 'Orders'],
     },
-    '/clientes': {
+    '/dashboard/clientes': {
       title: 'Clientes',
       buttonText: 'Añadir nuevo cliente',
       breadcrumb: ['Dashboard', 'Clientes'],
     },
-    // Añade más rutas según sea necesario
   };
 
-  // Determina los detalles según la ruta actual
   const currentRoute = routeDetails[location.pathname] || {
     title: 'Page',
     buttonText: 'Action',
@@ -69,7 +66,6 @@ function MainContent() {
         gap: 1,
       }}
     >
-      {/* Header dinámico con breadcrumbs */}
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Breadcrumbs
           size="sm"
@@ -77,12 +73,7 @@ function MainContent() {
           separator={<ChevronRightRoundedIcon fontSize="small" />}
           sx={{ pl: 0 }}
         >
-          <Link
-            underline="none"
-            color="neutral"
-            href="/"
-            aria-label="Home"
-          >
+          <Link underline="none" color="neutral" href="/" aria-label="Home">
             <HomeRoundedIcon />
           </Link>
           {currentRoute.breadcrumb.map((crumb, index) => (
@@ -123,25 +114,23 @@ function MainContent() {
       </Box>
 
       <Routes>
-        <Route path="/" element={<OrderTable />} />
-        <Route path="/clientes" element={<ClientTable />} />
-        {/* Añade más rutas aquí según tus componentes */}
+        <Route path="/dashboard" element={<OrderTable />} />
+        <Route path="/dashboard/clientes" element={<ClientTable />} />
       </Routes>
     </Box>
   );
 }
 
-export default function JoyOrderDashboardTemplate() {
+export default function App() {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
-      <Router>
-        <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-          <Header />
-          <Sidebar />
-          <MainContent />
-        </Box>
-      </Router>
+      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+        <Header />
+        <Sidebar />
+        
+        <MainContent />
+      </Box>
     </CssVarsProvider>
   );
 }
