@@ -5,6 +5,10 @@ const clientRoutes = require("../route/clientRoute.js");
 const supplierRoutes = require("../route/supplierRoute.js");
 const brandRoutes = require("../route/brandRoute.js");
 const modelRoutes = require("../route/modelRoute.js");
+const categoryRoutes = require("../route/categoryRoute.js");
+const productRoutes = require("../route/productRoute.js");
+const saleRoutes = require("../route/saleRoute.js");
+const orderRoutes = require("../route/orderRoute.js");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -20,6 +24,10 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/suppliers", supplierRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/models", modelRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/sales", saleRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Función para iniciar el servidor
 async function iniciar() {
