@@ -14,7 +14,7 @@ import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-
+import { useNavigate } from 'react-router-dom';
 
 import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
 
@@ -54,7 +54,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
 const customTheme = extendTheme({ colorSchemes: { dark: { palette: { mode: 'dark' } } } });
 
 export default function JoySignInSideTemplate() {
-  
+  const navigate = useNavigate(); // Hook para manejar la navegación
 
   const handleSubmit = async (event: React.FormEvent<SignInFormElement>) => {
     event.preventDefault();
@@ -64,8 +64,6 @@ export default function JoySignInSideTemplate() {
       password: formElements.password.value,
       persistent: formElements.persistent.checked,
     };
-  
-    console.log(data);
 
     try {
       const response = await fetch('http://localhost:3000/api/users/login', {
@@ -83,10 +81,10 @@ export default function JoySignInSideTemplate() {
       }
 
       const responseData = await response.json();
-      alert(`Token: ${responseData.token}`);
-      // Guardamos el token en localStorage o sessionStorage
-      localStorage.setItem('token', responseData.token);
-      // Aquí navegamos a la ruta correcta
+      localStorage.setItem('token', responseData.token); // Guarda el token de autenticación
+
+      alert('Inicio de sesión exitoso');
+      navigate('/dashboard'); // Redirige al Dashboard después de iniciar sesión
     } catch (error) {
       console.error('Error en la autenticación:', error);
       alert('Error en el servidor, por favor intenta más tarde.');
