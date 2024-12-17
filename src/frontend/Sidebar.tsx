@@ -156,7 +156,7 @@ export default function Sidebar() {
           </ListItem>
 
           <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="/clientes">
+          <ListItemButton component={Link} to="clientes">
               <DashboardRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Clientes</Typography>
@@ -165,7 +165,7 @@ export default function Sidebar() {
           </ListItem>
 
           <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="/sales">
+            <ListItemButton component={Link} to="sales">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Sales</Typography>
