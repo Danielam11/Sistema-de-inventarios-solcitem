@@ -20,6 +20,8 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; 
 
 function fetchClientes(setClientes: (data: any[]) => void) {
   fetch('http://localhost:3000/api/clients')
@@ -57,6 +59,41 @@ function updateCliente(
     .catch(onError);
 }
 
+function deleteCliente(clienteId: number, onSuccess: () => void, onError: (error: any) => void) {
+  fetch(`http://localhost:3000/api/clients/${clienteId}`, {
+    method: 'DELETE',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Error al eliminar el cliente');
+      }
+      return response.json();
+    })
+    .then(onSuccess)
+    .catch(onError);
+}
+
+function notifySuccess(message: string) {
+  toast.success(message, {
+    position: 'top-right',
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
+
+function notifyError(message: string) {
+  toast.error(message, {
+    position: 'top-right',
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
 
 export default function ClientTable() {
   const [clientes, setClientes] = useState<any[]>([]);
@@ -64,10 +101,73 @@ export default function ClientTable() {
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [editingCliente, setEditingCliente] = useState<any>(null); // Cliente en edición
   const [isModalOpen, setIsModalOpen] = useState(false); // Control del modal
+  const [isFormValid, setIsFormValid] = useState(false); // Estado de validación del formulario
 
   useEffect(() => {
-    fetchClientes(setClientes);
+    fetchClientes((data) => {
+      // Ordenar los clientes por cliente_id de mayor a menor antes de establecer el estado
+      const sortedClientes = data.sort((a: any, b: any) => b.cliente_id - a.cliente_id);
+      setClientes(sortedClientes);
+    });
   }, []);
+
+  const handleDelete = (clienteId: number) => {
+    toast(
+      ({ closeToast }) => (
+        <div style={{ textAlign: 'center' }}>
+          <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+            <Button
+              color="danger"
+              onClick={() => {
+                deleteCliente(
+                  clienteId,
+                  () => {
+                    setClientes((prevClientes) =>
+                      prevClientes.filter((c) => c.cliente_id !== clienteId)
+                    );
+                    notifySuccess('Cliente eliminado exitosamente.');
+                    closeToast(); // Cierra el toast
+                  },
+                  (error) => {
+                    console.error('Error al eliminar el cliente:', error);
+                    notifyError('No se pudo eliminar el cliente.');
+                    closeToast(); // Cierra el toast
+                  }
+                );
+              }}
+            >
+              Confirmar
+            </Button>
+            <Button onClick={closeToast}>Cancelar</Button>
+          </div>
+        </div>
+      ),
+      {
+        position: 'top-center',
+        autoClose: false, // No cerrar automáticamente
+        closeOnClick: false, // No cerrar al hacer clic fuera
+      }
+    );
+  };
+  
+
+  useEffect(() => {
+    // Validar el formulario dinámicamente
+    if (editingCliente) {
+      const { nombre, email, telefono, direccion } = editingCliente;
+
+      const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
+
+      const isValid =
+        nombre && nombre.length <= 255 &&
+        email && email.length <= 255 && emailRegex.test(email) &&
+        telefono && telefono.length <= 10 && /^\d*$/.test(telefono) &&
+        direccion && direccion.length <= 255;
+
+      setIsFormValid(isValid);
+    }
+  }, [editingCliente]);
 
   const handleEditClick = (cliente: any) => {
     setEditingCliente(cliente); // Cargar datos del cliente
@@ -95,11 +195,12 @@ export default function ClientTable() {
               : cliente
           )
         );
+        notifySuccess('Cliente actualizado exitosamente.');
         handleModalClose(); // Cierra el modal
       },
       (error) => {
         console.error('Error al actualizar el cliente:', error);
-        alert('No se pudo actualizar el cliente.');
+        notifyError('No se pudo actualizar el cliente.');
       }
     );
   };
@@ -194,7 +295,7 @@ export default function ClientTable() {
                       </MenuItem> */}
                       <MenuItem
                         color="danger"
-                        onClick={() => console.log('Eliminar', cliente.cliente_id)}
+                        onClick={() => handleDelete(cliente.cliente_id)}
                       >
                         Eliminar
                       </MenuItem>
@@ -208,7 +309,7 @@ export default function ClientTable() {
       </Sheet>
 
        {/* Modal de edición */}
-       <Modal open={isModalOpen} onClose={handleModalClose}>
+      <Modal open={isModalOpen} onClose={handleModalClose}>
         <ModalDialog>
           <Typography component="h2">Editar Cliente</Typography>
           {editingCliente && (
@@ -217,41 +318,69 @@ export default function ClientTable() {
                 <FormLabel>Nombre</FormLabel>
                 <Input
                   value={editingCliente.nombre}
-                  onChange={(e) =>
-                    setEditingCliente({ ...editingCliente, nombre: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const nombre = e.target.value;
+                    if (nombre.length <= 255) {
+                      setEditingCliente({ ...editingCliente, nombre });
+                    }
+                  }}
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Email</FormLabel>
+                <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
                 <Input
                   value={editingCliente.email}
-                  onChange={(e) =>
-                    setEditingCliente({ ...editingCliente, email: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const email = e.target.value;
+                    if (email.length <= 255) {
+                      setEditingCliente({ ...editingCliente, email });
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const email = e.target.value;
+                    const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
+                    if (!emailRegex.test(email)) {
+                      notifyError('Por favor, ingresa un correo válido.');
+                    } else {
+                      notifySuccess('Correo válido.');
+                    }
+                  }}
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Teléfono</FormLabel>
+                <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
                 <Input
                   value={editingCliente.telefono}
-                  onChange={(e) =>
-                    setEditingCliente({ ...editingCliente, telefono: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const telefono = e.target.value;
+                    if (/^\d*$/.test(telefono) && telefono.length <= 10) {
+                      setEditingCliente({ ...editingCliente, telefono });
+                    }
+                    if (!/^\d*$/.test(telefono)) {
+                      notifyError('Solo se permiten números en el teléfono.');
+                    }
+                  }}
                 />
               </FormControl>
               <FormControl>
-                <FormLabel>Dirección</FormLabel>
+                <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
                 <Input
                   value={editingCliente.direccion}
-                  onChange={(e) =>
-                    setEditingCliente({ ...editingCliente, direccion: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const direccion = e.target.value;
+                    if (direccion.length <= 255) {
+                      setEditingCliente({ ...editingCliente, direccion });
+                    }
+                  }}
                 />
               </FormControl>
-              <Box sx={{ mt: 2 }}>
-                <Button onClick={handleSave}>Guardar</Button>
-                <Button onClick={handleModalClose}>Cancelar</Button>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                <Button color="danger" onClick={handleModalClose}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} disabled={!isFormValid}>
+                  Guardar
+                </Button>
               </Box>
             </Box>
           )}
@@ -267,6 +396,7 @@ export default function ClientTable() {
           Siguiente
         </Button>
       </Box>
+      <ToastContainer />
     </React.Fragment>
   );
 }
