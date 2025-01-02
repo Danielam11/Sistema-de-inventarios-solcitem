@@ -1,7 +1,7 @@
 import { CssVarsProvider } from '@mui/joy/styles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
-import { Routes, Route, useLocation } from 'react-router-dom'; // NO se importa Router
+import { Routes, Route, useLocation } from 'react-router-dom'; 
 import Button from '@mui/joy/Button';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import Link from '@mui/joy/Link';
@@ -28,7 +28,7 @@ function MainContent() {
   const location = useLocation();
 
   const routeDetails: RouteDetails = {
-    '/dashboard': {
+    '/dashboard/sales': {
       title: 'Sales',
       buttonText: 'Add new order',
       breadcrumb: ['Dashboard', 'Orders'],
@@ -38,7 +38,7 @@ function MainContent() {
       buttonText: 'Añadir nuevo cliente',
       breadcrumb: ['Dashboard', 'Clientes'],
     },
-  };
+  }
 
   const currentRoute = routeDetails[location.pathname] || {
     title: 'Page',
@@ -114,9 +114,10 @@ function MainContent() {
       </Box>
 
       <Routes>
-        <Route path="/dashboard" element={<OrderTable />} />
-        <Route path="/dashboard/clientes" element={<ClientTable />} />
-      </Routes>
+  <Route index element={<OrderTable />} />
+  <Route path="clientes" element={<ClientTable />} />
+  <Route path="sales" element={<OrderTable />} />
+</Routes>
     </Box>
   );
 }
@@ -128,7 +129,6 @@ export default function App() {
       <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
         <Header />
         <Sidebar />
-        
         <MainContent />
       </Box>
     </CssVarsProvider>
