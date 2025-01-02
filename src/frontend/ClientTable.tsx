@@ -18,6 +18,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
 
 function fetchClientes(setClientes: (data: any[]) => void) {
   fetch('http://localhost:3000/api/clients')
@@ -26,14 +28,81 @@ function fetchClientes(setClientes: (data: any[]) => void) {
     .catch((error) => console.error('Error fetching clients:', error));
 }
 
+function updateCliente(
+  clienteId: string | number, // Declara el tipo del ID
+  clienteData: {
+  identificacion: string;
+  nombre: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  }, // Declara el tipo del cliente
+  onSuccess: (updatedCliente: any) => void, // Tipo de la función de éxito
+  onError: (error: any) => void // Tipo de la función de error
+) {
+  fetch(`http://localhost:3000/api/clients/${clienteId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(clienteData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Error al actualizar el cliente');
+      }
+      return response.json();
+    })
+    .then(onSuccess)
+    .catch(onError);
+}
+
+
 export default function ClientTable() {
   const [clientes, setClientes] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selected, setSelected] = useState<readonly string[]>([]);
+  const [editingCliente, setEditingCliente] = useState<any>(null); // Cliente en edición
+  const [isModalOpen, setIsModalOpen] = useState(false); // Control del modal
 
   useEffect(() => {
     fetchClientes(setClientes);
   }, []);
+
+  const handleEditClick = (cliente: any) => {
+    setEditingCliente(cliente); // Cargar datos del cliente
+    setIsModalOpen(true); // Abrir modal
+  };
+
+  const handleModalClose = () => {
+    setEditingCliente(null); // Limpiar cliente en edición
+    setIsModalOpen(false); // Cerrar modal
+  };
+
+  const handleSave = () => {
+    if (!editingCliente) return;
+
+    const { cliente_id, ...clienteData } = editingCliente;
+
+    updateCliente(
+      cliente_id,
+      clienteData,
+      (updatedCliente) => {
+        setClientes((prevClientes) =>
+          prevClientes.map((cliente) =>
+            cliente.cliente_id === updatedCliente.client.cliente_id
+              ? updatedCliente.client
+              : cliente
+          )
+        );
+        handleModalClose(); // Cierra el modal
+      },
+      (error) => {
+        console.error('Error al actualizar el cliente:', error);
+        alert('No se pudo actualizar el cliente.');
+      }
+    );
+  };
 
   const filteredClientes = clientes.filter((cliente) =>
     cliente.cliente_id.toString().includes(searchTerm) ||
@@ -117,12 +186,12 @@ export default function ClientTable() {
                       <MoreHorizRoundedIcon />
                     </MenuButton>
                     <Menu>
-                      <MenuItem onClick={() => console.log('Editar', cliente.cliente_id)}>
+                    <MenuItem onClick={() => handleEditClick(cliente)}>
                         Editar
                       </MenuItem>
-                      <MenuItem onClick={() => console.log('Actualizar', cliente.cliente_id)}>
+                      {/* <MenuItem onClick={() => console.log('Actualizar', cliente.cliente_id)}>
                         Actualizar
-                      </MenuItem>
+                      </MenuItem> */}
                       <MenuItem
                         color="danger"
                         onClick={() => console.log('Eliminar', cliente.cliente_id)}
@@ -137,6 +206,57 @@ export default function ClientTable() {
           </tbody>
         </Table>
       </Sheet>
+
+       {/* Modal de edición */}
+       <Modal open={isModalOpen} onClose={handleModalClose}>
+        <ModalDialog>
+          <Typography component="h2">Editar Cliente</Typography>
+          {editingCliente && (
+            <Box sx={{ mt: 2 }}>
+              <FormControl>
+                <FormLabel>Nombre</FormLabel>
+                <Input
+                  value={editingCliente.nombre}
+                  onChange={(e) =>
+                    setEditingCliente({ ...editingCliente, nombre: e.target.value })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Email</FormLabel>
+                <Input
+                  value={editingCliente.email}
+                  onChange={(e) =>
+                    setEditingCliente({ ...editingCliente, email: e.target.value })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Teléfono</FormLabel>
+                <Input
+                  value={editingCliente.telefono}
+                  onChange={(e) =>
+                    setEditingCliente({ ...editingCliente, telefono: e.target.value })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Dirección</FormLabel>
+                <Input
+                  value={editingCliente.direccion}
+                  onChange={(e) =>
+                    setEditingCliente({ ...editingCliente, direccion: e.target.value })
+                  }
+                />
+              </FormControl>
+              <Box sx={{ mt: 2 }}>
+                <Button onClick={handleSave}>Guardar</Button>
+                <Button onClick={handleModalClose}>Cancelar</Button>
+              </Box>
+            </Box>
+          )}
+        </ModalDialog>
+      </Modal>
 
       {/* Paginación */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', padding: 2 }}>
