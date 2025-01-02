@@ -232,10 +232,7 @@ export default function Sidebar() {
                   <ListItemButton component={Link} to="/users/profile">My profile</ListItemButton>
                 </ListItem>
                 <ListItem sx={{ mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/users/new">Create a new user</ListItemButton>
-                </ListItem>
-                <ListItem sx={{ mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/users/roles">Roles & permissions</ListItemButton>
+                  <ListItemButton component={Link} to="users">Create a new user</ListItemButton>
                 </ListItem>
               </List>
             </Toggler>

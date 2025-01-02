@@ -34,11 +34,11 @@ async function getUserByEmail(email) {
   }
 }
 
-async function getUserById(user_id) {
+async function getUserById(usuario_id) {
   try {
     const res = await pool.query(
       "SELECT * FROM Usuarios WHERE usuario_id = $1",
-      [user_id]
+      [usuario_id]
     );
 
     if (res.rows.length === 0) {
@@ -51,14 +51,14 @@ async function getUserById(user_id) {
   }
 }
 
-async function updateUser(user_id, email, password, rol) {
+async function updateUser(usuario_id, email, password, rol) {
   try {
     const res = await pool.query(
       `UPDATE Usuarios 
        SET email = $1, contrasena = $2, rol = $3 
        WHERE usuario_id = $4 
        RETURNING *`,
-      [email, password, rol, user_id]
+      [email, password, rol, usuario_id]
     );
     return res.rows[0];
   } catch (error) {
@@ -66,9 +66,9 @@ async function updateUser(user_id, email, password, rol) {
   }
 }
 
-async function deleteUser(user_id) {
+async function deleteUser(usuario_id) {
   try {
-    await pool.query("DELETE FROM Usuarios WHERE usuario_id = $1", [user_id]);
+    await pool.query("DELETE FROM Usuarios WHERE usuario_id = $1", [usuario_id]);
   } catch (error) {
     throw error;
   }

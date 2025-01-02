@@ -33,7 +33,7 @@ async function registerUser(req, res) {
     const newUser = await userModel.createUser(email, hashedPassword, rol);
     res.status(201).json({
       message: "Usuario registrado exitosamente",
-      userId: newUser.user_id,
+      userId: newUser.usuario_id,
     });
   } catch (error) {
     console.error("Error al registrar el usuario", error);
@@ -57,14 +57,14 @@ async function loginUser(req, res) {
     }
     console.log("Clave secreta JWT:", process.env.JWT_SECRET);
     // Generamos un token JWT
-    const token = jwt.sign({ userId: user.user_id }, "miCl4v3$3cR3tA!2024", {
+    const token = jwt.sign({ userId: user.usuario_id }, "miCl4v3$3cR3tA!2024", {
       expiresIn: "1h",
     });
 
     res.status(200).json({
       message: "Login exitoso",
       token, // Devuelve el token generado
-      userId: user.user_id,
+      userId: user.usuario_id,
     });
   } catch (error) {
     console.error("Error al iniciar sesión", error);
@@ -73,21 +73,32 @@ async function loginUser(req, res) {
 }
 
 async function editUser(req, res) {
-  const { user_id } = req.params;
+  const { usuario_id } = req.params;
   const { email, password, rol } = req.body;
 
   try {
-    const user = await userModel.getUserById(user_id);
+    // Verifica si el usuario existe
+    const user = await userModel.getUserById(usuario_id);
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+    let hashedPassword = user.contrasena; // Mantén la contraseña actual
+
+    // Si se proporciona una nueva contraseña, encriptarla
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
+
+    // Actualiza el usuario con los valores proporcionados
     const updatedUser = await userModel.updateUser(
-      user_id,
+      usuario_id,
       email,
-      password,
+      hashedPassword,
       rol
     );
+
     res
       .status(200)
       .json({ message: "Usuario actualizado exitosamente", user: updatedUser });
@@ -98,15 +109,15 @@ async function editUser(req, res) {
 }
 
 async function deleteUser(req, res) {
-  const { user_id } = req.params;
+  const { usuario_id } = req.params;
 
   try {
-    const user = await userModel.getUserById(user_id);
+    const user = await userModel.getUserById(usuario_id);
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
-    await userModel.deleteUser(user_id);
+    await userModel.deleteUser(usuario_id);
     res.status(200).json({ message: "Usuario eliminado exitosamente" });
   } catch (error) {
     console.error("Error al eliminar el usuario", error);

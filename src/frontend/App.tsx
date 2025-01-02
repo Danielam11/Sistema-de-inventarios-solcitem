@@ -15,6 +15,7 @@ import OrderTable from './OrderTable';
 import ClientTable from './ClientTable';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import Users from './users';
 
 interface RouteDetails {
   [key: string]: {
@@ -37,6 +38,11 @@ function MainContent() {
       title: 'Clientes',
       buttonText: 'Añadir nuevo cliente',
       breadcrumb: ['Dashboard', 'Clientes'],
+    },
+    '/dashboard/users': {
+      title: 'Users',
+      buttonText: 'Añadir nuevo Usuario',
+      breadcrumb: ['Dashboard', 'Usuarios'],
     },
   }
 
@@ -117,6 +123,7 @@ function MainContent() {
   <Route index element={<OrderTable />} />
   <Route path="clientes" element={<ClientTable />} />
   <Route path="sales" element={<OrderTable />} />
+  <Route path="users" element={<Users />} />
 </Routes>
     </Box>
   );
