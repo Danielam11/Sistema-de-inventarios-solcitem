@@ -23,6 +23,11 @@ import ModalDialog from '@mui/joy/ModalDialog';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
 
+interface ClientTableProps {
+  isCreateModalOpen: boolean;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 function fetchClientes(setClientes: (data: any[]) => void) {
   fetch('http://localhost:3000/api/clients')
     .then((response) => response.json())
@@ -73,6 +78,24 @@ function deleteCliente(clienteId: number, onSuccess: () => void, onError: (error
     .catch(onError);
 }
 
+async function createClient(clienteData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
+  fetch('http://localhost:3000/api/clients', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(clienteData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Error al crear el cliente');
+      }
+      return response.json();
+    })
+    .then(onSuccess)
+    .catch(onError);
+}
+
 function notifySuccess(message: string) {
   toast.success(message, {
     position: 'top-right',
@@ -95,13 +118,26 @@ function notifyError(message: string) {
   });
 }
 
-export default function ClientTable() {
+export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }: ClientTableProps) {
   const [clientes, setClientes] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selected, setSelected] = useState<readonly string[]>([]);
   const [editingCliente, setEditingCliente] = useState<any>(null); // Cliente en edición
   const [isModalOpen, setIsModalOpen] = useState(false); // Control del modal
   const [isFormValid, setIsFormValid] = useState(false); // Estado de validación del formulario
+  const [newCliente, setNewCliente] = useState({
+    identificacion: '',
+    nombre: '',
+    direccion: '',
+    telefono: '',
+    email: '',
+  });
+
+  const handleCreateChange = (e: { target: { name: string; value: string } }) => {
+    const { name, value } = e.target;
+    setNewCliente((prev) => ({ ...prev, [name]: value }));
+  };
+  
 
   useEffect(() => {
     fetchClientes((data) => {
@@ -201,6 +237,27 @@ export default function ClientTable() {
       (error) => {
         console.error('Error al actualizar el cliente:', error);
         notifyError('No se pudo actualizar el cliente.');
+      }
+    );
+  };
+
+  const handleCreateSave = () => {
+    createClient(
+      newCliente,
+      (createdCliente) => {
+        if (createdCliente && createdCliente.id) {
+          setClientes((prev) => [createdCliente, ...prev]); // Añade solo si es válido
+          notifySuccess('Cliente creado exitosamente.');
+        } else {
+          console.warn('La respuesta del cliente no es válida:', createdCliente);
+          notifyError('No se pudo procesar la respuesta del cliente.');
+        }
+        setIsCreateModalOpen(false);
+      },
+      (error) => {
+        console.error('Error al crear cliente:', error);
+        notifyError('No se pudo crear el cliente.');
+        return Promise.reject(error);
       }
     );
   };
@@ -384,6 +441,48 @@ export default function ClientTable() {
               </Box>
             </Box>
           )}
+        </ModalDialog>
+      </Modal>
+
+
+      {/* Modal de creacion */}
+      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+        <ModalDialog>
+          <Typography component="h2">Añadir Nuevo Cliente</Typography>
+          <Box sx={{ mt: 2 }}>
+            <FormControl>
+              <FormLabel>Identificación</FormLabel>
+              <Input
+                name="identificacion"
+                value={newCliente.identificacion}
+                onChange={handleCreateChange}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Nombre</FormLabel>
+              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Dirección</FormLabel>
+              <Input name="direccion" value={newCliente.direccion} onChange={handleCreateChange} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Teléfono</FormLabel>
+              <Input name="telefono" value={newCliente.telefono} onChange={handleCreateChange} />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input name="email" value={newCliente.email} onChange={handleCreateChange} />
+            </FormControl>
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+              <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateSave}>
+                Guardar
+              </Button>
+            </Box>
+          </Box>
         </ModalDialog>
       </Modal>
 

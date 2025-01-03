@@ -15,7 +15,8 @@ import OrderTable from './OrderTable';
 import ClientTable from './ClientTable';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Users from './users';
+import Users from './Users';
+import React, { useState } from 'react';
 
 interface RouteDetails {
   [key: string]: {
@@ -27,6 +28,7 @@ interface RouteDetails {
 
 function MainContent() {
   const location = useLocation();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const routeDetails: RouteDetails = {
     '/dashboard/sales': {
@@ -50,6 +52,12 @@ function MainContent() {
     title: 'Page',
     buttonText: 'Action',
     breadcrumb: ['Dashboard'],
+  };
+
+  const handleOpenModal = () => {
+    if (location.pathname === '/dashboard/clientes') {
+      setIsCreateModalOpen(true);
+    }
   };
 
   return (
@@ -110,21 +118,32 @@ function MainContent() {
         <Typography level="h2" component="h1">
           {currentRoute.title}
         </Typography>
-        <Button
-          color="primary"
-          startDecorator={<DownloadRoundedIcon />}
-          size="sm"
-        >
-          {currentRoute.buttonText}
-        </Button>
+        {location.pathname === '/dashboard/clientes' && (
+          <Button
+            color="primary"
+            startDecorator={<DownloadRoundedIcon />}
+            size="sm"
+            onClick={handleOpenModal}
+          >
+            {currentRoute.buttonText}
+          </Button>
+        )}
       </Box>
 
       <Routes>
-  <Route index element={<OrderTable />} />
-  <Route path="clientes" element={<ClientTable />} />
-  <Route path="sales" element={<OrderTable />} />
-  <Route path="users" element={<Users />} />
-</Routes>
+        <Route index element={<OrderTable />} />
+        <Route
+          path="clientes"
+          element={
+            <ClientTable
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
+        <Route path="sales" element={<OrderTable />} />
+        <Route path="users" element={<Users />} />
+      </Routes>
     </Box>
   );
 }

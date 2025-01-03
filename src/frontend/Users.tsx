@@ -21,13 +21,13 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 
-function fetchUsuarios(setUsuarios) {
+function fetchUsuarios(setUsuarios: (data: any[]) => void) {
   fetch('http://localhost:3000/api/users')
     .then((response) => response.json())
     .then((data) => {
       console.log('Datos de usuarios (raw):', data);
       const validUsuarios = (data || []).filter(
-        (usuario) => usuario && usuario.usuario_id && usuario.email && usuario.rol
+        (usuario: { usuario_id: any; email: any; rol: any; }) => usuario && usuario.usuario_id && usuario.email && usuario.rol
       );
       console.log('Usuarios válidos:', validUsuarios);
       setUsuarios(validUsuarios);
@@ -35,7 +35,7 @@ function fetchUsuarios(setUsuarios) {
     .catch((error) => console.error('Error fetching usuarios:', error));
 }
 
-function updateUsuario(usuarioId, usuarioData, onSuccess, onError) {
+function updateUsuario(usuarioId: string, usuarioData: { email: string; contrasena: string; rol: string; }, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => void) | null | undefined) {
   fetch(`http://localhost:3000/api/users/${usuarioId}`, {
     method: 'PUT',
     headers: {
@@ -53,7 +53,7 @@ function updateUsuario(usuarioId, usuarioData, onSuccess, onError) {
     .catch(onError);
 }
 
-function deleteUsuario(usuarioId, onSuccess, onError) {
+function deleteUsuario(usuarioId: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
   fetch(`http://localhost:3000/api/users/${usuarioId}`, {
     method: 'DELETE',
   })
@@ -68,9 +68,9 @@ function deleteUsuario(usuarioId, onSuccess, onError) {
 }
 
 export default function UserTable() {
-  const [usuarios, setUsuarios] = useState([]);
+  const [usuarios, setUsuarios] = useState<{ usuario_id: string; email: string; contrasena?: string; rol: string; }[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState<string[]>([]);
   const [editingUsuario, setEditingUsuario] = useState({ usuario_id: '', email: '', contrasena: '', rol: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -78,7 +78,7 @@ export default function UserTable() {
     fetchUsuarios(setUsuarios);
   }, []);
 
-  const handleEditClick = (usuario) => {
+  const handleEditClick = (usuario: { usuario_id: any; email: any; contrasena?: any; rol: any; }) => {
     if (!usuario) {
       console.warn('Usuario no válido para editar:', usuario);
       return;
@@ -126,7 +126,7 @@ export default function UserTable() {
     );
   };
 
-  const handleDelete = (usuarioId) => {
+  const handleDelete = (usuarioId: string) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       return;
     }
@@ -140,6 +140,7 @@ export default function UserTable() {
       (error) => {
         console.error('Error al eliminar el usuario:', error);
         alert('No se pudo eliminar el usuario.');
+        return Promise.reject(error);
       }
     );
   };
