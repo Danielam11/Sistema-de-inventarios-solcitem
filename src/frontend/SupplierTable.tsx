@@ -23,40 +23,40 @@ import ModalDialog from '@mui/joy/ModalDialog';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
 
-interface ClientTableProps {
+interface SupplierTableProps {
   isCreateModalOpen: boolean;
   setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function fetchClientes(setClientes: (data: any[]) => void) {
-  fetch('http://localhost:3000/api/clients')
+function fetchSuppliers(setSuppliers: (data: any[]) => void) {
+  fetch('http://localhost:3000/api/suppliers')
     .then((response) => response.json())
-    .then((data) => setClientes(data))
-    .catch((error) => console.error('Error fetching clients:', error));
+    .then((data) => setSuppliers(data))
+    .catch((error) => console.error('Error fetching suppliers:', error));
 }
 
-function updateCliente(
-  clienteId: string | number, // Declara el tipo del ID
-  clienteData: {
-  identificacion: string;
-  nombre: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  }, // Declara el tipo del cliente
-  onSuccess: (updatedCliente: any) => void, // Tipo de la función de éxito
-  onError: (error: any) => void // Tipo de la función de error
+function updateSupplier(
+  supplierId: string | number,
+  supplierData: {
+    identificacion: string;
+    nombre: string;
+    direccion: string;
+    telefono: string;
+    email: string;
+  },
+  onSuccess: (updatedSupplier: any) => void,
+  onError: (error: any) => void
 ) {
-  fetch(`http://localhost:3000/api/clients/${clienteId}`, {
+  fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(clienteData),
+    body: JSON.stringify(supplierData),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al actualizar el cliente');
+        throw new Error('Error al actualizar el proveedor');
       }
       return response.json();
     })
@@ -64,13 +64,13 @@ function updateCliente(
     .catch(onError);
 }
 
-function deleteCliente(clienteId: number, onSuccess: () => void, onError: (error: any) => void) {
-  fetch(`http://localhost:3000/api/clients/${clienteId}`, {
+function deleteSupplier(supplierId: number, onSuccess: () => void, onError: (error: any) => void) {
+  fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
     method: 'DELETE',
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al eliminar el cliente');
+        throw new Error('Error al eliminar el proveedor');
       }
       return response.json();
     })
@@ -78,17 +78,17 @@ function deleteCliente(clienteId: number, onSuccess: () => void, onError: (error
     .catch(onError);
 }
 
-async function createClient(clienteData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
-  fetch('http://localhost:3000/api/clients', {
+async function createSupplier(supplierData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
+  fetch('http://localhost:3000/api/suppliers', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(clienteData),
+    body: JSON.stringify(supplierData),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al crear el cliente');
+        throw new Error('Error al crear el proveedor');
       }
       return response.json();
     })
@@ -118,14 +118,14 @@ function notifyError(message: string) {
   });
 }
 
-export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }: ClientTableProps) {
-  const [clientes, setClientes] = useState<any[]>([]);
+export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen }: SupplierTableProps) {
+  const [suppliers, setSuppliers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selected, setSelected] = useState<readonly string[]>([]);
-  const [editingCliente, setEditingCliente] = useState<any>(null); // Cliente en edición
-  const [isModalOpen, setIsModalOpen] = useState(false); // Control del modal
-  const [isFormValid, setIsFormValid] = useState(false); // Estado de validación del formulario
-  const [newCliente, setNewCliente] = useState({
+  const [editingSupplier, setEditingSupplier] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [newSupplier, setNewSupplier] = useState({
     identificacion: '',
     nombre: '',
     direccion: '',
@@ -135,39 +135,40 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
 
   const handleCreateChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
-    setNewCliente((prev) => ({ ...prev, [name]: value }));
+    setNewSupplier((prev) => ({ ...prev, [name]: value }));
   };
-  
 
-  fetchClientes((data) => {
-    const sortedClientes = data
-      .filter((cliente) => cliente.cliente_id) // Excluir clientes sin cliente_id
-      .sort((a, b) => b.cliente_id - a.cliente_id);
-    setClientes(sortedClientes);
-  });
+  useEffect(() => {
+    fetchSuppliers((data) => {
+      const sortedSuppliers = data
+        .filter((supplier) => supplier.proveedor_id)
+        .sort((a, b) => b.proveedor_id - a.proveedor_id);
+      setSuppliers(sortedSuppliers);
+    });
+  }, []);
 
-  const handleDelete = (clienteId: number) => {
+  const handleDelete = (supplierId: number) => {
     toast(
       ({ closeToast }) => (
         <div style={{ textAlign: 'center' }}>
-          <p>¿Estás seguro de que deseas eliminar este cliente?</p>
+          <p>¿Estás seguro de que deseas eliminar este proveedor?</p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
             <Button
               color="danger"
               onClick={() => {
-                deleteCliente(
-                  clienteId,
+                deleteSupplier(
+                  supplierId,
                   () => {
-                    setClientes((prevClientes) =>
-                      prevClientes.filter((c) => c.cliente_id !== clienteId)
+                    setSuppliers((prevSuppliers) =>
+                      prevSuppliers.filter((s) => s.proveedor_id !== supplierId)
                     );
-                    notifySuccess('Cliente eliminado exitosamente.');
-                    closeToast(); // Cierra el toast
+                    notifySuccess('Proveedor eliminado exitosamente.');
+                    closeToast();
                   },
                   (error) => {
-                    console.error('Error al eliminar el cliente:', error);
-                    notifyError('No se pudo eliminar el cliente.');
-                    closeToast(); // Cierra el toast
+                    console.error('Error al eliminar el proveedor:', error);
+                    notifyError('No se pudo eliminar el proveedor.');
+                    closeToast();
                   }
                 );
               }}
@@ -180,17 +181,15 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
       ),
       {
         position: 'top-center',
-        autoClose: false, // No cerrar automáticamente
-        closeOnClick: false, // No cerrar al hacer clic fuera
+        autoClose: false,
+        closeOnClick: false,
       }
     );
   };
-  
 
   useEffect(() => {
-    // Validar el formulario dinámicamente
-    if (editingCliente) {
-      const { nombre, email, telefono, direccion } = editingCliente;
+    if (editingSupplier) {
+      const { nombre, email, telefono, direccion } = editingSupplier;
 
       const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
 
@@ -202,81 +201,79 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
 
       setIsFormValid(isValid);
     }
-  }, [editingCliente]);
+  }, [editingSupplier]);
 
-  const handleEditClick = (cliente: any) => {
-    setEditingCliente(cliente); // Cargar datos del cliente
-    setIsModalOpen(true); // Abrir modal
+  const handleEditClick = (supplier: any) => {
+    setEditingSupplier(supplier);
+    setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
-    setEditingCliente(null); // Limpiar cliente en edición
-    setIsModalOpen(false); // Cerrar modal
+    setEditingSupplier(null);
+    setIsModalOpen(false);
   };
 
   const handleSave = () => {
-    if (!editingCliente) return;
+    if (!editingSupplier) return;
 
-    const { cliente_id, ...clienteData } = editingCliente;
+    const { proveedor_id, ...supplierData } = editingSupplier;
 
-    updateCliente(
-      cliente_id,
-      clienteData,
-      (updatedCliente) => {
-        setClientes((prevClientes) =>
-          prevClientes.map((cliente) =>
-            cliente.cliente_id === updatedCliente.client.cliente_id
-              ? updatedCliente.client
-              : cliente
+    updateSupplier(
+      proveedor_id,
+      supplierData,
+      (updatedSupplier) => {
+        setSuppliers((prevSuppliers) =>
+          prevSuppliers.map((supplier) =>
+            supplier.proveedor_id === updatedSupplier.proveedor_id
+              ? updatedSupplier
+              : supplier
           )
         );
-        notifySuccess('Cliente actualizado exitosamente.');
-        handleModalClose(); // Cierra el modal
+        notifySuccess('Proveedor actualizado exitosamente.');
+        handleModalClose();
       },
       (error) => {
-        console.error('Error al actualizar el cliente:', error);
-        notifyError('No se pudo actualizar el cliente.');
+        console.error('Error al actualizar el proveedor:', error);
+        notifyError('No se pudo actualizar el proveedor.');
       }
     );
   };
 
   const handleCreateSave = async () => {
     try {
-      await createClient(
-        newCliente,
-        (createdCliente) => {
-          if (createdCliente && createdCliente.clientId) {
-            // Ajustar la respuesta al formato esperado
-            const formattedCliente = {
-              ...newCliente,
-              cliente_id: createdCliente.clientId, // Mapea clientId como cliente_id
+      await createSupplier(
+        newSupplier,
+        (createdSupplier) => {
+          if (createdSupplier && createdSupplier.proveedor_id) {
+            const formattedSupplier = {
+              ...newSupplier,
+              proveedor_id: createdSupplier.proveedor_id,
             };
-            setClientes((prev) => [formattedCliente, ...prev]);
-            notifySuccess('Cliente creado exitosamente.');
+            setSuppliers((prev) => [formattedSupplier, ...prev]);
+            notifySuccess('Proveedor creado exitosamente.');
           } else {
-            console.warn('La respuesta del cliente no es válida:', createdCliente);
-            notifyError('No se pudo procesar la respuesta del cliente.');
+            console.warn('La respuesta del proveedor no es válida:', createdSupplier);
+            notifyError('No se pudo procesar la respuesta del proveedor.');
           }
           setIsCreateModalOpen(false);
         },
         (error) => {
-          console.error('Error al crear cliente:', error);
-          notifyError('No se pudo crear el cliente. Inténtelo nuevamente.');
+          console.error('Error al crear el proveedor:', error);
+          notifyError('No se pudo crear el proveedor. Inténtelo nuevamente.');
           throw error;
         }
       );
     } catch (error) {
-      console.error('Error inesperado al crear el cliente:', error);
+      console.error('Error inesperado al crear el proveedor:', error);
       notifyError('Ocurrió un error inesperado. Por favor, revise la consola.');
     }
   };
-  
 
-  const filteredClientes = clientes.filter((cliente) =>
-    cliente.cliente_id?.toString().includes(searchTerm) ||
-    cliente.identificacion?.includes(searchTerm) ||
-    cliente.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cliente.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSuppliers = suppliers.filter((supplier) =>
+    supplier.proveedor_id?.toString().includes(searchTerm) ||
+    supplier.identificacion?.includes(searchTerm) ||
+    supplier.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    supplier.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -284,7 +281,7 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
       {/* Barra de búsqueda */}
       <Box sx={{ display: 'flex', gap: 1.5, padding: 2 }}>
         <FormControl sx={{ flex: 1 }}>
-          <FormLabel>Buscar Clientes</FormLabel>
+          <FormLabel>Buscar Proveedores</FormLabel>
           <Input
             placeholder="Buscar por ID, Documento, Nombre o Correo"
             startDecorator={<SearchIcon />}
@@ -294,7 +291,7 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
         </FormControl>
       </Box>
 
-      {/* Tabla de clientes */}
+      {/* Tabla de proveedores */}
       <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
         <Table stickyHeader>
           <thead>
@@ -303,17 +300,17 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
                 <Checkbox
                   size="sm"
                   indeterminate={
-                    selected.length > 0 && selected.length !== filteredClientes.length
+                    selected.length > 0 && selected.length !== filteredSuppliers.length
                   }
-                  checked={selected.length === filteredClientes.length}
+                  checked={selected.length === filteredSuppliers.length}
                   onChange={(e) =>
                     setSelected(
-                      e.target.checked ? filteredClientes.map((c) => c.cliente_id) : []
+                      e.target.checked ? filteredSuppliers.map((s) => s.proveedor_id) : []
                     )
                   }
                 />
               </th>
-              <th style={{ width: 90 }}>Cliente ID</th>
+              <th style={{ width: 90 }}>Proveedor ID</th>
               <th style={{ width: 120 }}>Nro Documento</th>
               <th style={{ width: 150 }}>Nombre</th>
               <th style={{ width: 250, wordBreak: 'break-word' }}>Correo</th>
@@ -323,28 +320,27 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
             </tr>
           </thead>
           <tbody>
-            {filteredClientes.map((cliente) => (
-              <tr key={cliente.cliente_id || 'N/A'}>
+            {filteredSuppliers.map((supplier) => (
+              <tr key={supplier.proveedor_id || 'N/A'}>
                 <td style={{ textAlign: 'center' }}>
                   <Checkbox
                     size="sm"
-                    checked={selected.includes(cliente.cliente_id)}
+                    checked={selected.includes(supplier.proveedor_id)}
                     onChange={(e) => {
                       setSelected((ids) =>
                         e.target.checked
-                          ? ids.concat(cliente.cliente_id)
-                          : ids.filter((id) => id !== cliente.cliente_id)
+                          ? ids.concat(supplier.proveedor_id)
+                          : ids.filter((id) => id !== supplier.proveedor_id)
                       );
                     }}
                   />
                 </td>
-                <td>{cliente.cliente_id || 'N/A'}</td>
-                <td>{cliente.identificacion || 'N/A'}</td>
-                <td>{cliente.nombre || 'N/A'}</td>
-                <td style={{ wordBreak: 'break-word' }}>{cliente.email || 'N/A'}</td>
-                <td style={{ textAlign: 'center' }}>{cliente.telefono || 'N/A'}</td>
-                <td>{cliente.direccion || 'N/A'}</td>
-                {/* Columna de Acciones */}
+                <td>{supplier.proveedor_id || 'N/A'}</td>
+                <td>{supplier.identificacion || 'N/A'}</td>
+                <td>{supplier.nombre || 'N/A'}</td>
+                <td style={{ wordBreak: 'break-word' }}>{supplier.email || 'N/A'}</td>
+                <td style={{ textAlign: 'center' }}>{supplier.telefono || 'N/A'}</td>
+                <td>{supplier.direccion || 'N/A'}</td>
                 <td style={{ textAlign: 'center' }}>
                   <Dropdown>
                     <MenuButton
@@ -354,12 +350,12 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
                       <MoreHorizRoundedIcon />
                     </MenuButton>
                     <Menu>
-                    <MenuItem onClick={() => handleEditClick(cliente)}>
+                      <MenuItem onClick={() => handleEditClick(supplier)}>
                         Editar
                       </MenuItem>
                       <MenuItem
                         color="danger"
-                        onClick={() => handleDelete(cliente.cliente_id)}
+                        onClick={() => handleDelete(supplier.proveedor_id)}
                       >
                         Eliminar
                       </MenuItem>
@@ -372,20 +368,20 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
         </Table>
       </Sheet>
 
-       {/* Modal de edición */}
+      {/* Modal de edición */}
       <Modal open={isModalOpen} onClose={handleModalClose}>
         <ModalDialog>
-          <Typography component="h2">Editar Cliente</Typography>
-          {editingCliente && (
+          <Typography component="h2">Editar Proveedor</Typography>
+          {editingSupplier && (
             <Box sx={{ mt: 2 }}>
               <FormControl>
                 <FormLabel>Nombre</FormLabel>
                 <Input
-                  value={editingCliente.nombre}
+                  value={editingSupplier.nombre}
                   onChange={(e) => {
                     const nombre = e.target.value;
                     if (nombre.length <= 255) {
-                      setEditingCliente({ ...editingCliente, nombre });
+                      setEditingSupplier({ ...editingSupplier, nombre });
                     }
                   }}
                 />
@@ -393,11 +389,11 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
               <FormControl>
                 <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
                 <Input
-                  value={editingCliente.email}
+                  value={editingSupplier.email}
                   onChange={(e) => {
                     const email = e.target.value;
                     if (email.length <= 255) {
-                      setEditingCliente({ ...editingCliente, email });
+                      setEditingSupplier({ ...editingSupplier, email });
                     }
                   }}
                   onBlur={(e) => {
@@ -414,11 +410,11 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
               <FormControl>
                 <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
                 <Input
-                  value={editingCliente.telefono}
+                  value={editingSupplier.telefono}
                   onChange={(e) => {
                     const telefono = e.target.value;
                     if (/^\d*$/.test(telefono) && telefono.length <= 10) {
-                      setEditingCliente({ ...editingCliente, telefono });
+                      setEditingSupplier({ ...editingSupplier, telefono });
                     }
                     if (!/^\d*$/.test(telefono)) {
                       notifyError('Solo se permiten números en el teléfono.');
@@ -429,11 +425,11 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
               <FormControl>
                 <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
                 <Input
-                  value={editingCliente.direccion}
+                  value={editingSupplier.direccion}
                   onChange={(e) => {
                     const direccion = e.target.value;
                     if (direccion.length <= 255) {
-                      setEditingCliente({ ...editingCliente, direccion });
+                      setEditingSupplier({ ...editingSupplier, direccion });
                     }
                   }}
                 />
@@ -451,35 +447,50 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
         </ModalDialog>
       </Modal>
 
-
-      {/* Modal de creacion */}
+      {/* Modal de creación */}
       <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
         <ModalDialog>
-          <Typography component="h2">Añadir Nuevo Cliente</Typography>
+          <Typography component="h2">Añadir Nuevo Proveedor</Typography>
           <Box sx={{ mt: 2 }}>
             <FormControl>
               <FormLabel>Identificación</FormLabel>
               <Input
                 name="identificacion"
-                value={newCliente.identificacion}
+                value={newSupplier.identificacion}
                 onChange={handleCreateChange}
               />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Nombre</FormLabel>
-              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} />
+              <Input
+                name="nombre"
+                value={newSupplier.nombre}
+                onChange={handleCreateChange}
+              />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
-              <Input name="direccion" value={newCliente.direccion} onChange={handleCreateChange} />
+              <Input
+                name="direccion"
+                value={newSupplier.direccion}
+                onChange={handleCreateChange}
+              />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
-              <Input name="telefono" value={newCliente.telefono} onChange={handleCreateChange} />
+              <Input
+                name="telefono"
+                value={newSupplier.telefono}
+                onChange={handleCreateChange}
+              />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
-              <Input name="email" value={newCliente.email} onChange={handleCreateChange} />
+              <Input
+                name="email"
+                value={newSupplier.email}
+                onChange={handleCreateChange}
+              />
             </FormControl>
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>

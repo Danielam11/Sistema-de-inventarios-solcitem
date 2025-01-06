@@ -205,10 +205,10 @@ export default function Sidebar() {
           </ListItem>
 
           <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="/suppliers">
+            <ListItemButton component={Link} to="proveedores">
               <QuestionAnswerRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Suppliers</Typography>
+                <Typography level="title-sm">Proveedores</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>

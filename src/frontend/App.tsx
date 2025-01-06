@@ -17,6 +17,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import Users from './Users';
 import React, { useState } from 'react';
+import SuppliersTable from './SupplierTable';
 
 interface RouteDetails {
   [key: string]: {
@@ -45,6 +46,12 @@ function MainContent() {
       title: 'Users',
       buttonText: 'Añadir nuevo Usuario',
       breadcrumb: ['Dashboard', 'Usuarios'],
+    },
+
+    '/dashboard/proveedores': {
+      title: 'Proveedores',
+      buttonText: 'Añadir nuevo Proveedor',
+      breadcrumb: ['Dashboard', 'Proveedores'],
     },
   }
 
@@ -143,6 +150,15 @@ function MainContent() {
         />
         <Route path="sales" element={<OrderTable />} />
         <Route path="users" element={<Users />} />
+        <Route
+          path="proveedores"
+          element={
+            <SuppliersTable
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
       </Routes>
     </Box>
   );
