@@ -15,7 +15,9 @@ import OrderTable from './OrderTable';
 import ClientTable from './ClientTable';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import Users from './users';
+import Users from './Users';
+import React, { useState } from 'react';
+import SuppliersTable from './SupplierTable';
 
 interface RouteDetails {
   [key: string]: {
@@ -27,6 +29,7 @@ interface RouteDetails {
 
 function MainContent() {
   const location = useLocation();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const routeDetails: RouteDetails = {
     '/dashboard/sales': {
@@ -44,12 +47,24 @@ function MainContent() {
       buttonText: 'Añadir nuevo Usuario',
       breadcrumb: ['Dashboard', 'Usuarios'],
     },
+
+    '/dashboard/proveedores': {
+      title: 'Proveedores',
+      buttonText: 'Añadir nuevo Proveedor',
+      breadcrumb: ['Dashboard', 'Proveedores'],
+    },
   }
 
   const currentRoute = routeDetails[location.pathname] || {
     title: 'Page',
     buttonText: 'Action',
     breadcrumb: ['Dashboard'],
+  };
+
+  const handleOpenModal = () => {
+    if (location.pathname === '/dashboard/clientes') {
+      setIsCreateModalOpen(true);
+    }
   };
 
   return (
@@ -110,21 +125,41 @@ function MainContent() {
         <Typography level="h2" component="h1">
           {currentRoute.title}
         </Typography>
-        <Button
-          color="primary"
-          startDecorator={<DownloadRoundedIcon />}
-          size="sm"
-        >
-          {currentRoute.buttonText}
-        </Button>
+        {location.pathname === '/dashboard/clientes' && (
+          <Button
+            color="primary"
+            startDecorator={<DownloadRoundedIcon />}
+            size="sm"
+            onClick={handleOpenModal}
+          >
+            {currentRoute.buttonText}
+          </Button>
+        )}
       </Box>
 
       <Routes>
-  <Route index element={<OrderTable />} />
-  <Route path="clientes" element={<ClientTable />} />
-  <Route path="sales" element={<OrderTable />} />
-  <Route path="users" element={<Users />} />
-</Routes>
+        <Route index element={<OrderTable />} />
+        <Route
+          path="clientes"
+          element={
+            <ClientTable
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
+        <Route path="sales" element={<OrderTable />} />
+        <Route path="users" element={<Users />} />
+        <Route
+          path="proveedores"
+          element={
+            <SuppliersTable
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
+      </Routes>
     </Box>
   );
 }
