@@ -67,6 +67,7 @@ function deleteUsuario(usuarioId, onSuccess, onError) {
     .catch(onError);
 }
 
+
 export default function UserTable() {
   const [usuarios, setUsuarios] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -276,9 +277,9 @@ export default function UserTable() {
                   }
                 />
               </FormControl>
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Button onClick={handleSave}>Guardar</Button>
-                <Button onClick={handleModalClose}>Cancelar</Button>
+                <Button color="danger" onClick={handleModalClose}>Cancelar</Button>
               </Box>
             </Box>
           )}
