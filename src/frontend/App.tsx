@@ -62,7 +62,7 @@ function MainContent() {
   };
 
   const handleOpenModal = () => {
-    if (location.pathname === '/dashboard/clientes') {
+    if (['/dashboard/clientes', '/dashboard/proveedores'].includes(location.pathname)) {
       setIsCreateModalOpen(true);
     }
   };
@@ -125,16 +125,16 @@ function MainContent() {
         <Typography level="h2" component="h1">
           {currentRoute.title}
         </Typography>
-        {location.pathname === '/dashboard/clientes' && (
-          <Button
-            color="primary"
-            startDecorator={<DownloadRoundedIcon />}
-            size="sm"
-            onClick={handleOpenModal}
-          >
-            {currentRoute.buttonText}
-          </Button>
-        )}
+        {currentRoute.buttonText && (
+        <Button
+          color="primary"
+          startDecorator={<DownloadRoundedIcon />}
+          size="sm"
+          onClick={handleOpenModal}
+        >
+          {currentRoute.buttonText}
+        </Button>
+      )}
       </Box>
 
       <Routes>

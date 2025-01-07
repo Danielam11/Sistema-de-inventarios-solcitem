@@ -38,10 +38,10 @@ function fetchSuppliers(setSuppliers: (data: any[]) => void) {
 function updateSupplier(
   supplierId: string | number,
   supplierData: {
-    identificacion: string;
-    nombre: string;
-    direccion: string;
-    telefono: string;
+    identification: string;
+    name: string;
+    address: string;
+    phone: string;
     email: string;
   },
   onSuccess: (updatedSupplier: any) => void,
@@ -64,11 +64,12 @@ function updateSupplier(
     .catch(onError);
 }
 
-function deleteSupplier(supplierId: number, onSuccess: () => void, onError: (error: any) => void) {
+function deleteSupplier(supplierId: number, onSuccess: (response: any) => void, onError: (error: any) => void) {
   fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
     method: 'DELETE',
   })
     .then((response) => {
+      console.log(response)
       if (!response.ok) {
         throw new Error('Error al eliminar el proveedor');
       }
@@ -126,10 +127,10 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [newSupplier, setNewSupplier] = useState({
-    identificacion: '',
-    nombre: '',
-    direccion: '',
-    telefono: '',
+    identification: '',
+    name: '',
+    address: '',
+    phone: '',
     email: '',
   });
 
@@ -158,16 +159,22 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
               onClick={() => {
                 deleteSupplier(
                   supplierId,
-                  () => {
-                    setSuppliers((prevSuppliers) =>
-                      prevSuppliers.filter((s) => s.proveedor_id !== supplierId)
-                    );
-                    notifySuccess('Proveedor eliminado exitosamente.');
+                  (response: { message: string; }) => {
+                    console.log('Respuesta del backend al eliminar:', response);
+                
+                    if (response.message === "Proveedor eliminado exitosamente") {
+                      setSuppliers((prevSuppliers) =>
+                        prevSuppliers.filter((s) => s.proveedor_id !== supplierId)
+                      );
+                      notifySuccess(response.message);
+                    } else {
+                      notifyError('No se pudo eliminar el proveedor. Inténtelo nuevamente.');
+                    }
                     closeToast();
                   },
                   (error) => {
                     console.error('Error al eliminar el proveedor:', error);
-                    notifyError('No se pudo eliminar el proveedor.');
+                    notifyError('No se pudo eliminar el proveedor. Inténtelo nuevamente.');
                     closeToast();
                   }
                 );
@@ -215,17 +222,30 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
 
   const handleSave = () => {
     if (!editingSupplier) return;
-
-    const { proveedor_id, ...supplierData } = editingSupplier;
-
+  
+    const { proveedor_id, nombre, direccion, telefono, email, identificacion } = editingSupplier;
+  
+    // Mapeo de nombres para enviar al backend
+    const supplierData = {
+      identification: identificacion,
+      name: nombre,
+      address: direccion,
+      phone: telefono,
+      email: email,
+    };
+  
+    console.log('Actualizando proveedor:', { proveedor_id, supplierData });
+  
     updateSupplier(
       proveedor_id,
       supplierData,
       (updatedSupplier) => {
+        console.log('Respuesta del backend:', updatedSupplier);
+  
         setSuppliers((prevSuppliers) =>
           prevSuppliers.map((supplier) =>
-            supplier.proveedor_id === updatedSupplier.proveedor_id
-              ? updatedSupplier
+            supplier.proveedor_id === updatedSupplier.supplier.proveedor_id
+              ? updatedSupplier.supplier
               : supplier
           )
         );
@@ -240,19 +260,38 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
   };
 
   const handleCreateSave = async () => {
+    const { identification, name, address, phone, email } = newSupplier;
+  
+    // Validaciones antes de enviar al servicio
+    if (!identification || !name || !address || !phone || !email) {
+      notifyError('Todos los campos son obligatorios.');
+      return;
+    }
+  
+    const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
+    if (!emailRegex.test(email)) {
+      notifyError('Por favor, ingresa un correo electrónico válido.');
+      return;
+    }
+  
+    if (!/^\d{10}$/.test(phone)) {
+      notifyError('El teléfono debe tener exactamente 10 dígitos.');
+      return;
+    }
+  
+    console.log('Datos enviados al servicio:', newSupplier); // Imprime los datos que se enviarán
+  
     try {
       await createSupplier(
         newSupplier,
-        (createdSupplier) => {
-          if (createdSupplier && createdSupplier.proveedor_id) {
-            const formattedSupplier = {
-              ...newSupplier,
-              proveedor_id: createdSupplier.proveedor_id,
-            };
-            setSuppliers((prev) => [formattedSupplier, ...prev]);
-            notifySuccess('Proveedor creado exitosamente.');
+        (response) => {
+          const { message, supplier } = response;
+  
+          if (supplier && supplier.proveedor_id) {
+            setSuppliers((prev) => [supplier, ...prev]);
+            notifySuccess(message || 'Proveedor creado exitosamente.');
           } else {
-            console.warn('La respuesta del proveedor no es válida:', createdSupplier);
+            console.warn('La respuesta del proveedor no es válida:', response);
             notifyError('No se pudo procesar la respuesta del proveedor.');
           }
           setIsCreateModalOpen(false);
@@ -268,6 +307,8 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
       notifyError('Ocurrió un error inesperado. Por favor, revise la consola.');
     }
   };
+  
+  
 
   const filteredSuppliers = suppliers.filter((supplier) =>
     supplier.proveedor_id?.toString().includes(searchTerm) ||
@@ -455,32 +496,32 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
             <FormControl>
               <FormLabel>Identificación</FormLabel>
               <Input
-                name="identificacion"
-                value={newSupplier.identificacion}
+                name="identification"
+                value={newSupplier.identification}
                 onChange={handleCreateChange}
               />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Nombre</FormLabel>
               <Input
-                name="nombre"
-                value={newSupplier.nombre}
+                name="name"
+                value={newSupplier.name}
                 onChange={handleCreateChange}
               />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
               <Input
-                name="direccion"
-                value={newSupplier.direccion}
+                name="address"
+                value={newSupplier.address}
                 onChange={handleCreateChange}
               />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
               <Input
-                name="telefono"
-                value={newSupplier.telefono}
+                name="phone"
+                value={newSupplier.phone}
                 onChange={handleCreateChange}
               />
             </FormControl>
