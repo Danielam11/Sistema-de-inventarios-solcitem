@@ -1,0 +1,127 @@
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import Box from '@mui/joy/Box';
+import FormControl from '@mui/joy/FormControl';
+import FormLabel from '@mui/joy/FormLabel';
+import Input from '@mui/joy/Input';
+import Table from '@mui/joy/Table';
+import Sheet from '@mui/joy/Sheet';
+import Dropdown from '@mui/joy/Dropdown';
+import Menu from '@mui/joy/Menu';
+import MenuButton from '@mui/joy/MenuButton';
+import MenuItem from '@mui/joy/MenuItem';
+import IconButton from '@mui/joy/IconButton';
+import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+function fetchPedidos(setPedidos) {
+  fetch('http://localhost:3000/api/orders')
+    .then((response) => response.json())
+    .then((data) => setPedidos(data))
+    .catch((error) => console.error('Error fetching orders:', error));
+}
+
+export default function OrderTable() {
+  const [pedidos, setPedidos] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    fetchPedidos(setPedidos); // Carga los pedidos y detalles combinados desde la API
+  }, []);
+
+  const handleDelete = (pedidoId) => {
+    fetch(`http://localhost:3000/api/orders/${pedidoId}`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Error al eliminar el pedido');
+        }
+        setPedidos((prev) => prev.filter((pedido) => pedido.pedido_id !== pedidoId));
+        toast.success('Pedido eliminado exitosamente.');
+      })
+      .catch((error) => {
+        console.error('Error al eliminar pedido:', error);
+        toast.error('No se pudo eliminar el pedido.');
+      });
+  };
+
+  const filteredPedidos = pedidos.filter(
+    (pedido) =>
+      pedido.fecha_pedido.includes(searchTerm) ||
+      pedido.proveedor_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      pedido.usuario_nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <React.Fragment>
+      <Box sx={{ display: 'flex', gap: 1.5, padding: 2 }}>
+        <FormControl sx={{ flex: 1 }}>
+          <FormLabel>Buscar Pedidos</FormLabel>
+          <Input
+            placeholder="Buscar por fecha, proveedor o usuario"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </FormControl>
+      </Box>
+
+      <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
+        <Table stickyHeader>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Proveedor</th>
+              <th>Usuario</th>
+              <th>Total</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Subtotal</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPedidos.map((pedido) =>
+              pedido.detalles.map((detalle, index) => (
+                <tr key={`${pedido.pedido_id}-${detalle.detalle_id}-${index}`}>
+                  <td>{pedido.fecha_pedido}</td>
+                  <td>{pedido.proveedor_nombre}</td>
+                  <td>{pedido.usuario_nombre}</td>
+                  <td>{index === 0 ? pedido.total : ''}</td> {/* Solo mostramos el total en la primera fila del pedido */}
+                  <td>{detalle.producto_nombre}</td>
+                  <td>{detalle.cantidad}</td>
+                  <td>{detalle.precio_unitario}</td>
+                  <td>{detalle.subtotal}</td>
+                  <td>
+                    {index === 0 && (
+                      <Dropdown>
+                        <MenuButton
+                          slots={{ root: IconButton }}
+                          slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
+                        >
+                          <MoreHorizRoundedIcon />
+                        </MenuButton>
+                        <Menu>
+                          <MenuItem
+                            color="danger"
+                            onClick={() => handleDelete(pedido.pedido_id)}
+                          >
+                            Eliminar
+                          </MenuItem>
+                        </Menu>
+                      </Dropdown>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </Sheet>
+
+      <ToastContainer />
+    </React.Fragment>
+  );
+}

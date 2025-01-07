@@ -45,7 +45,7 @@ async function getAllSales() {
     const query = `
       SELECT v.venta_id, v.fecha_venta, v.total, v.subtotal, 
              c.nombre AS cliente_nombre, 
-             u.nombre AS usuario_nombre
+             u.* -- Obtén todos los datos de la tabla Usuarios para depuración
       FROM Ventas v
       LEFT JOIN Clientes c ON v.cliente_id = c.cliente_id
       LEFT JOIN Usuarios u ON v.usuario_id = u.usuario_id`;
@@ -62,7 +62,7 @@ async function getSaleById(id) {
     const ventaQuery = `
       SELECT v.venta_id, v.fecha_venta, v.total, v.subtotal, 
              c.nombre AS cliente_nombre, 
-             u.nombre AS usuario_nombre
+             u.* -- Obtén todos los datos de la tabla Usuarios para depuración
       FROM Ventas v
       LEFT JOIN Clientes c ON v.cliente_id = c.cliente_id
       LEFT JOIN Usuarios u ON v.usuario_id = u.usuario_id

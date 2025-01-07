@@ -1,20 +1,13 @@
 const pool = require("../config/db");
 
 // Crear un nuevo pedido (order)
-async function createOrder(
-  fechaPedido,
-  proveedorId,
-  usuarioId,
-  total,
-  subtotal,
-  detalles
-) {
+async function createOrder(fechaPedido, proveedorId, usuarioId, total, detalles) {
   try {
     // Insertar el pedido (order)
     const query = `
-        INSERT INTO Pedidos (fecha_pedido, proveedor_id, usuario_id, total, subtotal)
-        VALUES ($1, $2, $3, $4, $5) RETURNING *`;
-    const values = [fechaPedido, proveedorId, usuarioId, total, subtotal];
+        INSERT INTO Pedidos (fecha_pedido, proveedor_id, usuario_id, total)
+        VALUES ($1, $2, $3, $4) RETURNING *`;
+    const values = [fechaPedido, proveedorId, usuarioId, total];
     const result = await pool.query(query, values);
     const order = result.rows[0];
 
@@ -31,7 +24,7 @@ async function createOrder(
         detalle.precioUnitario,
         detalle.subtotal,
       ];
-      return pool.query(detalleQuery, detalleValues); // Retorna la promesa para cada consulta
+      return pool.query(detalleQuery, detalleValues);
     });
 
     // Ejecutar todas las consultas en paralelo
@@ -47,9 +40,9 @@ async function createOrder(
 async function getAllOrders() {
   try {
     const query = `
-      SELECT p.pedido_id, p.fecha_pedido, p.total, p.subtotal, 
+      SELECT p.pedido_id, p.fecha_pedido, p.total, 
              pr.nombre AS proveedor_nombre, 
-             u.nombre AS usuario_nombre
+             u.email AS usuario_email -- Ajustado para usar la columna 'email'
       FROM Pedidos p
       LEFT JOIN Proveedores pr ON p.proveedor_id = pr.proveedor_id
       LEFT JOIN Usuarios u ON p.usuario_id = u.usuario_id`;
@@ -64,9 +57,9 @@ async function getAllOrders() {
 async function getOrderById(id) {
   try {
     const orderQuery = `
-      SELECT p.pedido_id, p.fecha_pedido, p.total, p.subtotal, 
+      SELECT p.pedido_id, p.fecha_pedido, p.total, 
              pr.nombre AS proveedor_nombre, 
-             u.nombre AS usuario_nombre
+             u.email AS usuario_email -- Ajustado para usar la columna 'email'
       FROM Pedidos p
       LEFT JOIN Proveedores pr ON p.proveedor_id = pr.proveedor_id
       LEFT JOIN Usuarios u ON p.usuario_id = u.usuario_id
@@ -107,23 +100,16 @@ async function deleteOrder(id) {
   }
 }
 
-async function updateOrder(
-  id,
-  fechaPedido,
-  proveedorId,
-  usuarioId,
-  total,
-  subtotal,
-  detalles
-) {
+// Actualizar un pedido (order)
+async function updateOrder(id, fechaPedido, proveedorId, usuarioId, total, detalles) {
   try {
     // 1. Actualizar la cabecera del pedido
     const query = `
         UPDATE Pedidos
-        SET fecha_pedido = $1, proveedor_id = $2, usuario_id = $3, total = $4, subtotal = $5
-        WHERE pedido_id = $6
+        SET fecha_pedido = $1, proveedor_id = $2, usuario_id = $3, total = $4
+        WHERE pedido_id = $5
         RETURNING *`;
-    const values = [fechaPedido, proveedorId, usuarioId, total, subtotal, id];
+    const values = [fechaPedido, proveedorId, usuarioId, total, id];
     const result = await pool.query(query, values);
     const updatedOrder = result.rows[0];
 
