@@ -64,20 +64,24 @@ function updateSupplier(
     .catch(onError);
 }
 
-function deleteSupplier(supplierId: number, onSuccess: (response: any) => void, onError: (error: any) => void) {
+function deleteSupplier(
+  supplierId: number,
+  onSuccess: () => void, // No necesitamos la respuesta
+  onError: (error: any) => void
+) {
   fetch(`http://localhost:3000/api/suppliers/${supplierId}`, {
     method: 'DELETE',
   })
     .then((response) => {
-      console.log(response)
       if (!response.ok) {
         throw new Error('Error al eliminar el proveedor');
       }
-      return response.json();
+      return; // No necesitamos procesar una respuesta JSON si la eliminación fue exitosa
     })
-    .then(onSuccess)
-    .catch(onError);
+    .then(onSuccess) // Llama a la función de éxito directamente
+    .catch(onError); // Maneja cualquier error
 }
+
 
 async function createSupplier(supplierData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
   fetch('http://localhost:3000/api/suppliers', {
@@ -159,25 +163,20 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
               onClick={() => {
                 deleteSupplier(
                   supplierId,
-                  (response: { message: string; }) => {
-                    console.log('Respuesta del backend al eliminar:', response);
-                
-                    if (response.message === "Proveedor eliminado exitosamente") {
-                      setSuppliers((prevSuppliers) =>
-                        prevSuppliers.filter((s) => s.proveedor_id !== supplierId)
-                      );
-                      notifySuccess(response.message);
-                    } else {
-                      notifyError('No se pudo eliminar el proveedor. Inténtelo nuevamente.');
-                    }
+                  () => {
+                    setSuppliers((prevSuppliers) =>
+                      prevSuppliers.filter((s) => s.proveedor_id !== supplierId)
+                    );
+                    notifySuccess('Proveedor eliminado exitosamente.');
                     closeToast();
                   },
                   (error) => {
                     console.error('Error al eliminar el proveedor:', error);
-                    notifyError('No se pudo eliminar el proveedor. Inténtelo nuevamente.');
+                    notifyError('No se pudo eliminar el proveedor.');
                     closeToast();
                   }
                 );
+                
               }}
             >
               Confirmar
