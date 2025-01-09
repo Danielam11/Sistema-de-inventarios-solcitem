@@ -2,7 +2,6 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import Checkbox from '@mui/joy/Checkbox';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import Input from '@mui/joy/Input';
@@ -22,21 +21,19 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function fetchProductos(setProductos) {
-  fetch('http://localhost:3000/api/products')
-    .then((response) => response.json())
-    .then((data) => setProductos(data))
-    .catch((error) => console.error('Error fetching products:', error));
-}
-
-function fetchData(endpoint, setData) {
+function fetchData(endpoint: string, setData: (data: any) => void) {
   fetch(`http://localhost:3000/api/${endpoint}`)
-    .then((response) => response.json())
-    .then((data) => setData(data))
-    .catch((error) => console.error(`Error fetching ${endpoint}:`, error));
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error fetching ${endpoint}`);
+      }
+      return response.json();
+    })
+    .then(setData)
+    .catch((error) => console.error(error));
 }
 
-function createProducto(productoData, onSuccess, onError) {
+function createProducto(productoData: any, onSuccess: (data: any) => void, onError: (error: any) => void) {
   fetch('http://localhost:3000/api/products', {
     method: 'POST',
     headers: {
@@ -54,7 +51,7 @@ function createProducto(productoData, onSuccess, onError) {
     .catch(onError);
 }
 
-function updateProducto(productoId, productoData, onSuccess, onError) {
+function updateProducto(productoId: string, productoData: any, onSuccess: (data: any) => void, onError: (error: any) => void) {
   fetch(`http://localhost:3000/api/products/${productoId}`, {
     method: 'PUT',
     headers: {
@@ -72,7 +69,30 @@ function updateProducto(productoId, productoData, onSuccess, onError) {
     .catch(onError);
 }
 
-function deleteProducto(productoId, onSuccess, onError) {
+interface Producto {
+  producto_id: string;
+  nombre: string;
+  descripcion: string;
+  precio_compra: number;
+  precio_venta: number;
+  cantidad: number;
+  marca_id: string;
+  modelo_id: string;
+  categoria_id: string;
+  marca_nombre?: string;
+  modelo_nombre?: string;
+  categoria_nombre?: string;
+}
+
+interface DeleteProductoResponse {
+  message: string;
+}
+
+function deleteProducto(
+  productoId: string,
+  onSuccess: (data: DeleteProductoResponse) => void,
+  onError: (error: any) => void
+) {
   fetch(`http://localhost:3000/api/products/${productoId}`, {
     method: 'DELETE',
   })
@@ -87,55 +107,72 @@ function deleteProducto(productoId, onSuccess, onError) {
 }
 
 export default function ProductTable() {
-  const [productos, setProductos] = useState([]);
-  const [marcas, setMarcas] = useState([]);
-  const [modelos, setModelos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  interface Marca {
+    marca_id: string;
+    nombre: string;
+  }
+  
+  const [marcas, setMarcas] = useState<Marca[]>([]);
+  interface Modelo {
+    modelo_id: string;
+    nombre: string;
+  }
+
+  const [modelos, setModelos] = useState<Modelo[]>([]);
+  interface Categoria {
+    categoria_id: string;
+    nombre: string;
+  }
+
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingProducto, setEditingProducto] = useState(null);
-  const [newProducto, setNewProducto] = useState({
+  const [editingProducto, setEditingProducto] = useState<Producto | null>(null);
+  const [newProducto, setNewProducto] = useState<Producto>({
+    producto_id: '',
     nombre: '',
     descripcion: '',
-    precio_compra: '',
-    precio_venta: '',
-    cantidad: '',
+    precio_compra: 0,
+    precio_venta: 0,
+    cantidad: 0,
     marca_id: '',
     modelo_id: '',
     categoria_id: '',
   });
 
   useEffect(() => {
-    fetchProductos(setProductos);
+    fetchData('products', setProductos);
     fetchData('brands', setMarcas);
     fetchData('models', setModelos);
     fetchData('categories', setCategorias);
   }, []);
 
-  const handleCreateChange = (e) => {
+  const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setNewProducto((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEditChange = (e) => {
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setEditingProducto((prev) => ({ ...prev, [name]: value }));
+    setEditingProducto((prev: Producto | null) => (prev ? { ...prev, [name]: value } : null));
   };
 
   const handleCreateSave = () => {
     createProducto(
       newProducto,
       (createdProducto) => {
-        setProductos((prev) => [createdProducto, ...prev]);
+        setProductos((prev: Producto[]) => [createdProducto, ...prev]);
         toast.success('Producto creado exitosamente.');
         setIsCreateModalOpen(false);
         setNewProducto({
+          producto_id: '',
           nombre: '',
           descripcion: '',
-          precio_compra: '',
-          precio_venta: '',
-          cantidad: '',
+          precio_compra: 0,
+          precio_venta: 0,
+          cantidad: 0,
           marca_id: '',
           modelo_id: '',
           categoria_id: '',
@@ -150,12 +187,14 @@ export default function ProductTable() {
 
   const handleEditSave = () => {
     updateProducto(
-      editingProducto.producto_id,
+      editingProducto!.producto_id,
       editingProducto,
       (updatedProducto) => {
         setProductos((prev) =>
           prev.map((producto) =>
-            producto.producto_id === updatedProducto.producto_id ? updatedProducto : producto
+            producto.producto_id === updatedProducto.producto_id
+              ? updatedProducto
+              : producto
           )
         );
         toast.success('Producto actualizado exitosamente.');
@@ -169,11 +208,11 @@ export default function ProductTable() {
     );
   };
 
-  const handleDelete = (productoId) => {
+  const handleDelete = (productoId: string) => {
     deleteProducto(
       productoId,
       () => {
-        setProductos((prev) => prev.filter((producto) => producto.producto_id !== productoId));
+        setProductos((prev: Producto[]) => prev.filter((producto) => producto.producto_id !== productoId));
         toast.success('Producto eliminado exitosamente.');
       },
       (error) => {
@@ -238,10 +277,12 @@ export default function ProductTable() {
                       <MoreHorizRoundedIcon />
                     </MenuButton>
                     <Menu>
-                      <MenuItem onClick={() => {
-                        setEditingProducto(producto);
-                        setIsEditModalOpen(true);
-                      }}>
+                      <MenuItem
+                        onClick={() => {
+                          setEditingProducto(producto);
+                          setIsEditModalOpen(true);
+                        }}
+                      >
                         Editar
                       </MenuItem>
                       <MenuItem
@@ -265,11 +306,7 @@ export default function ProductTable() {
           <Box sx={{ mt: 2 }}>
             <FormControl>
               <FormLabel>Nombre</FormLabel>
-              <Input
-                name="nombre"
-                value={newProducto.nombre}
-                onChange={handleCreateChange}
-              />
+              <Input name="nombre" value={newProducto.nombre} onChange={handleCreateChange} />
             </FormControl>
             <FormControl>
               <FormLabel>Descripción</FormLabel>
@@ -311,7 +348,9 @@ export default function ProductTable() {
               <Select
                 name="marca_id"
                 value={newProducto.marca_id}
-                onChange={(e, value) => setNewProducto((prev) => ({ ...prev, marca_id: value }))}
+                onChange={(e, value) =>
+                  setNewProducto((prev) => ({ ...prev, marca_id: value || '' }))
+                }
               >
                 {marcas.map((marca) => (
                   <Option key={marca.marca_id} value={marca.marca_id}>
@@ -325,7 +364,9 @@ export default function ProductTable() {
               <Select
                 name="modelo_id"
                 value={newProducto.modelo_id}
-                onChange={(e, value) => setNewProducto((prev) => ({ ...prev, modelo_id: value }))}
+                onChange={(e, value) =>
+                  setNewProducto((prev) => ({ ...prev, modelo_id: value || '' }))
+                }
               >
                 {modelos.map((modelo) => (
                   <Option key={modelo.modelo_id} value={modelo.modelo_id}>
@@ -339,7 +380,9 @@ export default function ProductTable() {
               <Select
                 name="categoria_id"
                 value={newProducto.categoria_id}
-                onChange={(e, value) => setNewProducto((prev) => ({ ...prev, categoria_id: value }))}
+                onChange={(e, value) =>
+                  setNewProducto((prev) => ({ ...prev, categoria_id: value || '' }))
+                }
               >
                 {categorias.map((categoria) => (
                   <Option key={categoria.categoria_id} value={categoria.categoria_id}>
@@ -411,7 +454,9 @@ export default function ProductTable() {
                 <Select
                   name="marca_id"
                   value={editingProducto.marca_id}
-                  onChange={(e, value) => setEditingProducto((prev) => ({ ...prev, marca_id: value }))}
+                  onChange={(e, value) =>
+                    setEditingProducto((prev) => (prev ? { ...prev, marca_id: value || '' } : null))
+                  }
                 >
                   {marcas.map((marca) => (
                     <Option key={marca.marca_id} value={marca.marca_id}>
@@ -425,7 +470,9 @@ export default function ProductTable() {
                 <Select
                   name="modelo_id"
                   value={editingProducto.modelo_id}
-                  onChange={(e, value) => setEditingProducto((prev) => ({ ...prev, modelo_id: value }))}
+                  onChange={(e, value) =>
+                    setEditingProducto((prev) => (prev ? { ...prev, modelo_id: value || '' } : null))
+                  }
                 >
                   {modelos.map((modelo) => (
                     <Option key={modelo.modelo_id} value={modelo.modelo_id}>
@@ -439,7 +486,9 @@ export default function ProductTable() {
                 <Select
                   name="categoria_id"
                   value={editingProducto.categoria_id}
-                  onChange={(e, value) => setEditingProducto((prev) => ({ ...prev, categoria_id: value }))}
+                  onChange={(e, value) =>
+                    setEditingProducto((prev) => (prev ? { ...prev, categoria_id: value || '' } : null))
+                  }
                 >
                   {categorias.map((categoria) => (
                     <Option key={categoria.categoria_id} value={categoria.categoria_id}>

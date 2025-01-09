@@ -15,22 +15,28 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function fetchPedidos(setPedidos) {
+function fetchPedidos(setPedidos: (data: any[]) => void) {
   fetch('http://localhost:3000/api/orders')
     .then((response) => response.json())
-    .then((data) => setPedidos(data))
+    .then((data) => {
+      const pedidosConDetalles = data.map((pedido: any) => ({
+        ...pedido,
+        detalles: pedido.detalles || [], // Asegurar que "detalles" siempre sea un array
+      }));
+      setPedidos(pedidosConDetalles);
+    })
     .catch((error) => console.error('Error fetching orders:', error));
 }
 
 export default function OrderTable() {
-  const [pedidos, setPedidos] = useState([]);
+  const [pedidos, setPedidos] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchPedidos(setPedidos); // Carga los pedidos y detalles combinados desde la API
   }, []);
 
-  const handleDelete = (pedidoId) => {
+  const handleDelete = (pedidoId: any) => {
     fetch(`http://localhost:3000/api/orders/${pedidoId}`, {
       method: 'DELETE',
     })
@@ -83,41 +89,52 @@ export default function OrderTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredPedidos.map((pedido) =>
-              pedido.detalles.map((detalle, index) => (
-                <tr key={`${pedido.pedido_id}-${detalle.detalle_id}-${index}`}>
-                  <td>{pedido.fecha_pedido}</td>
-                  <td>{pedido.proveedor_nombre}</td>
-                  <td>{pedido.usuario_nombre}</td>
-                  <td>{index === 0 ? pedido.total : ''}</td> {/* Solo mostramos el total en la primera fila del pedido */}
-                  <td>{detalle.producto_nombre}</td>
-                  <td>{detalle.cantidad}</td>
-                  <td>{detalle.precio_unitario}</td>
-                  <td>{detalle.subtotal}</td>
-                  <td>
-                    {index === 0 && (
-                      <Dropdown>
-                        <MenuButton
-                          slots={{ root: IconButton }}
-                          slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
-                        >
-                          <MoreHorizRoundedIcon />
-                        </MenuButton>
-                        <Menu>
-                          <MenuItem
-                            color="danger"
-                            onClick={() => handleDelete(pedido.pedido_id)}
-                          >
-                            Eliminar
-                          </MenuItem>
-                        </Menu>
-                      </Dropdown>
-                    )}
-                  </td>
-                </tr>
-              ))
+  {filteredPedidos.map((pedido) =>
+    (pedido.detalles || []).map(
+      (
+        detalle: {
+          detalle_id: any;
+          producto_nombre: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+          cantidad: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+          precio_unitario: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+          subtotal: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
+        },
+        index: number
+      ) => (
+        <tr key={`${pedido.pedido_id}-${detalle.detalle_id}-${index}`}>
+          <td>{pedido.fecha_pedido}</td>
+          <td>{pedido.proveedor_nombre}</td>
+          <td>{pedido.usuario_nombre}</td>
+          <td>{index === 0 ? pedido.total : ''}</td>
+          <td>{detalle.producto_nombre}</td>
+          <td>{detalle.cantidad}</td>
+          <td>{detalle.precio_unitario}</td>
+          <td>{detalle.subtotal}</td>
+          <td>
+            {index === 0 && (
+              <Dropdown>
+                <MenuButton
+                  slots={{ root: IconButton }}
+                  slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
+                >
+                  <MoreHorizRoundedIcon />
+                </MenuButton>
+                <Menu>
+                  <MenuItem
+                    color="danger"
+                    onClick={() => handleDelete(pedido.pedido_id)}
+                  >
+                    Eliminar
+                  </MenuItem>
+                </Menu>
+              </Dropdown>
             )}
-          </tbody>
+          </td>
+        </tr>
+      )
+    )
+  )}
+</tbody>
         </Table>
       </Sheet>
 

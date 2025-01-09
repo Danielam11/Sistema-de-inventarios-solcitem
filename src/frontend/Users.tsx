@@ -20,6 +20,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
+import { toast } from 'react-toastify';
 
 function fetchUsuarios(setUsuarios: (data: any[]) => void) {
   fetch('http://localhost:3000/api/users')

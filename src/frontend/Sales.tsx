@@ -123,11 +123,12 @@ export default function SalesTable() {
           </thead>
           <tbody>
             {filteredSales.map((sale) => (
+              console.log(sale),
               <tr key={sale.venta_id}>
                 <td>{sale.venta_id}</td>
                 <td>{sale.fecha_venta}</td>
-                <td>{sale.cliente_id}</td>
                 <td>{sale.usuario_id}</td>
+                <td>{sale.cliente_nombre}</td>
                 <td>{sale.total}</td>
                 <td>{sale.subtotal}</td>
                 <td>{sale.producto_id}</td>

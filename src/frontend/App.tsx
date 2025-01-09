@@ -178,7 +178,7 @@ function MainContent() {
           }
         />
         <Route path="productos" element={<Products />} />
-        <Route path="pedidos" element={<Orders />} />
+        <Route path="pedidos" element={<Orders/>} />
         <Route path="ventas" element={<Sales />} />
       </Routes>
     </Box>
