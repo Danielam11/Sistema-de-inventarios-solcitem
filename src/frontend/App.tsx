@@ -47,11 +47,15 @@ function MainContent() {
       buttonText: 'Añadir nuevo Usuario',
       breadcrumb: ['Dashboard', 'Usuarios'],
     },
-
     '/dashboard/proveedores': {
       title: 'Proveedores',
       buttonText: 'Añadir nuevo Proveedor',
       breadcrumb: ['Dashboard', 'Proveedores'],
+    },
+    '/dashboard/pedidos': {
+      title: 'Pedidos',
+      buttonText: 'Añadir nuevo Pedidos',
+      breadcrumb: ['Dashboard', 'Pedidos'],
     },
   }
 

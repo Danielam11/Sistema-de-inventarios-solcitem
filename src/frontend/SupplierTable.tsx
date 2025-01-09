@@ -427,6 +427,18 @@ export default function SuppliersTable({ isCreateModalOpen, setIsCreateModalOpen
                 />
               </FormControl>
               <FormControl>
+                <FormLabel sx={{ pt: 1 }}>Nro Documento</FormLabel>
+                <Input
+                  value={editingSupplier.identificacion}
+                  onChange={(e) => {
+                    const identificacion = e.target.value;
+                    if (identificacion.length <= 255) {
+                      setEditingSupplier({ ...editingSupplier, identificacion });
+                    }
+                  }}
+                />
+              </FormControl>
+              <FormControl>
                 <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
                 <Input
                   value={editingSupplier.email}
