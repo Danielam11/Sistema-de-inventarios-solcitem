@@ -137,25 +137,18 @@ export default function Sidebar() {
         }}
       >
         <List size="sm" sx={{ gap: 1, '--List-nestedInsetStart': '30px', '--ListItem-radius': (theme) => theme.vars.radius.sm }}>
-          <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="/">
+          <ListItem sx={{ mb: 3 }}>
+            <ListItemButton component={Link} to="productos">
               <HomeRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Products</Typography>
+                <Typography level="title-sm">Productos</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
           
-          <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="/inventory">
-              <ShoppingCartRoundedIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Inventory</Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
+          
 
-          <ListItem sx={{ mb: 1 }}>
+          <ListItem sx={{ mb: 3 }}>
           <ListItemButton component={Link} to="clientes">
               <DashboardRoundedIcon />
               <ListItemContent>
@@ -164,47 +157,25 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem sx={{ mb: 1 }}>
-            <ListItemButton component={Link} to="sales">
+          <ListItem sx={{ mb: 3 }}>
+            <ListItemButton component={Link} to="ventas">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Sales</Typography>
+                <Typography level="title-sm">Ventas</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
 
-          <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <AssignmentRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Orders</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[open ? { transform: 'rotate(180deg)' } : { transform: 'none' }]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/orders/all-tasks">All tasks</ListItemButton>
-                </ListItem>
-                <ListItem sx={{ mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/orders/backlog">Backlog</ListItemButton>
-                </ListItem>
-                <ListItem sx={{ mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/orders/in-progress">In progress</ListItemButton>
-                </ListItem>
-                <ListItem sx={{ mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/orders/done">Done</ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
+          <ListItem sx={{ mb: 3 }}>
+            <ListItemButton component={Link} to="pedidos">
+              <QuestionAnswerRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Pedidos</Typography>
+              </ListItemContent>
+            </ListItemButton>
           </ListItem>
 
-          <ListItem sx={{ mb: 1 }}>
+          <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="proveedores">
               <QuestionAnswerRoundedIcon />
               <ListItemContent>
@@ -231,14 +202,14 @@ export default function Sidebar() {
                 <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
                   <ListItemButton component={Link} to="/users/profile">My profile</ListItemButton>
                 </ListItem>
-                <ListItem sx={{ mb: 0.5 }}>
+                <ListItem sx={{ mb: 3 }}>
                   <ListItemButton component={Link} to="users">Create a new user</ListItemButton>
                 </ListItem>
               </List>
             </Toggler>
           </ListItem>
 
-          <ListItem sx={{ mb: 0 }}>
+          <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="/cash">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
@@ -247,25 +218,11 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem sx={{ mb: 0 }}>
-            <ListItemButton component={Link} to="/seguridad">
-            <ShieldIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Seguridad</Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem sx={{ mb: 0 }}>
-            <ListItemButton component={Link} to="/settings">
-              <SettingsRoundedIcon />
-              Settings
-            </ListItemButton>
-          </ListItem>
+          
         </List>
       </Box>
       <Divider />
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
         <Avatar
           variant="outlined"
           size="sm"

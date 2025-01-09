@@ -18,6 +18,10 @@ import Header from './Header';
 import Users from './Users';
 import React, { useState } from 'react';
 import SuppliersTable from './SupplierTable';
+import Products from './Products'
+import Orders from './Orders'
+import Sales from './Sales'
+
 
 interface RouteDetails {
   [key: string]: {
@@ -52,10 +56,20 @@ function MainContent() {
       buttonText: 'Añadir nuevo Proveedor',
       breadcrumb: ['Dashboard', 'Proveedores'],
     },
+    '/dashboard/productos': {
+      title: 'Productos',
+      buttonText: 'Añadir nuevo producto',
+      breadcrumb: ['Dashboard', 'productos'],
+    },
     '/dashboard/pedidos': {
       title: 'Pedidos',
-      buttonText: 'Añadir nuevo Pedidos',
+      buttonText: 'Añadir nuevo pedido',
       breadcrumb: ['Dashboard', 'Pedidos'],
+    },
+    '/dashboard/ventas': {
+      title: 'Ventas',
+      buttonText: 'Añadir nueva Venta',
+      breadcrumb: ['Dashboard', 'Ventas'],
     },
   }
 
@@ -163,6 +177,9 @@ function MainContent() {
             />
           }
         />
+        <Route path="productos" element={<Products />} />
+        <Route path="pedidos" element={<Orders />} />
+        <Route path="ventas" element={<Sales />} />
       </Routes>
     </Box>
   );

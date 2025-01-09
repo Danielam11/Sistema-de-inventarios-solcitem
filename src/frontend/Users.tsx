@@ -67,6 +67,46 @@ function deleteUsuario(usuarioId: any, onSuccess: ((value: any) => any) | null |
     .catch(onError);
 }
 
+async function createClient(clienteData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
+  fetch('http://localhost:3000/api/clients', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(clienteData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Error al crear el cliente');
+      }
+      return response.json();
+    })
+    .then(onSuccess)
+    .catch(onError);
+}
+
+function notifySuccess(message: string) {
+  toast.success(message, {
+    position: 'top-right',
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
+
+function notifyError(message: string) {
+  toast.error(message, {
+    position: 'top-right',
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
+
 export default function UserTable() {
   const [usuarios, setUsuarios] = useState<{ usuario_id: string; email: string; contrasena?: string; rol: string; }[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -277,9 +317,9 @@ export default function UserTable() {
                   }
                 />
               </FormControl>
-              <Box sx={{ mt: 2 }}>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Button onClick={handleSave}>Guardar</Button>
-                <Button onClick={handleModalClose}>Cancelar</Button>
+                <Button color="danger" onClick={handleModalClose}>Cancelar</Button>
               </Box>
             </Box>
           )}

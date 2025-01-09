@@ -2,19 +2,18 @@ const salesModel = require("../model/saleModel");
 
 // Crear una nueva venta
 function createSale(req, res) {
-  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } =
-    req.body;
+  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } = req.body;
 
   salesModel
     .createSale(fechaVenta, clienteId, usuarioId, total, subtotal, detalles)
-    .then(function (sale) {
+    .then((sale) => {
       res.status(201).json({
         message: "Venta creada exitosamente",
-        sale: sale,
+        sale,
       });
     })
-    .catch(function (error) {
-      console.error("Error al crear la venta:", error);
+    .catch((error) => {
+      console.error("Error al crear la venta:", error.message);
       res.status(500).json({ error: "Error al crear la venta" });
     });
 }
@@ -23,11 +22,11 @@ function createSale(req, res) {
 function getAllSales(req, res) {
   salesModel
     .getAllSales()
-    .then(function (sales) {
+    .then((sales) => {
       res.status(200).json(sales);
     })
-    .catch(function (error) {
-      console.error("Error al obtener las ventas:", error);
+    .catch((error) => {
+      console.error("Error al obtener las ventas:", error.message);
       res.status(500).json({ error: "Error al obtener las ventas" });
     });
 }
@@ -38,12 +37,15 @@ function getSaleById(req, res) {
 
   salesModel
     .getSaleById(id)
-    .then(function (sale) {
+    .then((sale) => {
+      if (!sale) {
+        return res.status(404).json({ error: "Venta no encontrada" });
+      }
       res.status(200).json(sale);
     })
-    .catch(function (error) {
-      console.error("Error al obtener la venta:", error);
-      res.status(500).json({ error: "Venta no encontrada" });
+    .catch((error) => {
+      console.error("Error al obtener la venta:", error.message);
+      res.status(500).json({ error: "Error al obtener la venta" });
     });
 }
 
@@ -53,11 +55,11 @@ function deleteSale(req, res) {
 
   salesModel
     .deleteSale(id)
-    .then(function () {
+    .then(() => {
       res.status(200).json({ message: "Venta eliminada exitosamente" });
     })
-    .catch(function (error) {
-      console.error("Error al eliminar la venta:", error);
+    .catch((error) => {
+      console.error("Error al eliminar la venta:", error.message);
       res.status(500).json({ error: "Error al eliminar la venta" });
     });
 }
@@ -65,29 +67,25 @@ function deleteSale(req, res) {
 // Actualizar una venta existente
 async function updateSale(req, res) {
   const { id } = req.params;
-  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } =
-    req.body;
+  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } = req.body;
 
   try {
-    // Actualizamos la venta
     const sale = await salesModel.updateSale(
       id,
       fechaVenta,
       clienteId,
       usuarioId,
       total,
-      subtotal
+      subtotal,
+      detalles
     );
-
-    // Actualizamos los detalles de la venta
-    await salesModel.updateSaleDetails(id, detalles);
 
     res.status(200).json({
       message: "Venta actualizada exitosamente",
-      sale: sale,
+      sale,
     });
   } catch (error) {
-    console.error("Error al actualizar la venta:", error);
+    console.error("Error al actualizar la venta:", error.message);
     res.status(500).json({ error: "Error al actualizar la venta" });
   }
 }
