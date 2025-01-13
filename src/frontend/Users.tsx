@@ -22,6 +22,11 @@ import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import { toast } from 'react-toastify';
 
+interface UsersProps {
+  isCreateModalOpen: boolean;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 function fetchUsuarios(setUsuarios: (data: any[]) => void) {
   fetch('http://localhost:3000/api/users')
     .then((response) => response.json())
@@ -108,17 +113,28 @@ function notifyError(message: string) {
   });
 }
 
-export default function UserTable() {
+export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: UsersProps) {
   const [usuarios, setUsuarios] = useState<{ usuario_id: string; email: string; contrasena?: string; rol: string; }[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
   const [editingUsuario, setEditingUsuario] = useState({ usuario_id: '', email: '', contrasena: '', rol: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newUsuario, setNewUsuario] = useState({
+    email: '',
+    password: '', // Cambiar contrasena por password
+    rol: '',
+  });
 
   useEffect(() => {
     fetchUsuarios(setUsuarios);
   }, []);
 
+
+  const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewUsuario((prev) => ({ ...prev, [name]: value }));
+  };
+  
   const handleEditClick = (usuario: { usuario_id: any; email: any; contrasena?: any; rol: any; }) => {
     if (!usuario) {
       console.warn('Usuario no válido para editar:', usuario);
@@ -167,6 +183,43 @@ export default function UserTable() {
     );
   };
 
+  const handleCreateSave = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUsuario),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear el usuario');
+      }
+  
+      const { userId, message } = await response.json();
+  
+      const createdUsuario = {
+        usuario_id: userId,
+        email: newUsuario.email,
+        rol: newUsuario.rol,
+      };
+  
+      setUsuarios((prev) => [createdUsuario, ...prev]);
+      setSearchTerm(''); // Resetea el término de búsqueda
+      toast.success(message || 'Usuario creado exitosamente.');
+      setIsCreateModalOpen(false); // Cierra el modal
+    } catch (error) {
+      console.error('Error al crear el usuario:', error);
+      if (error instanceof Error) {
+        toast.error(error.message || 'No se pudo crear el usuario.');
+      } else {
+        toast.error('No se pudo crear el usuario.');
+      }
+    }
+  };
+  
+  
+
   const handleDelete = (usuarioId: string) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       return;
@@ -189,6 +242,7 @@ export default function UserTable() {
   const filteredUsuarios = usuarios.filter(
     (usuario) =>
       usuario &&
+      usuario.usuario_id &&
       (usuario.usuario_id.toString().includes(searchTerm) ||
         usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         usuario.rol.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -285,6 +339,48 @@ export default function UserTable() {
           </tbody>
         </Table>
       </Sheet>
+
+      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
+  <ModalDialog>
+    <Typography component="h2">Añadir Nuevo Usuario</Typography>
+    <Box sx={{ mt: 2 }}>
+      <FormControl>
+        <FormLabel>Email</FormLabel>
+        <Input
+          name="email"
+          value={newUsuario.email}
+          onChange={handleCreateChange}
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel>Contraseña</FormLabel>
+        <Input
+          name="password"
+          type="password"
+          value={newUsuario.password}
+          onChange={handleCreateChange}
+        />
+      </FormControl>
+      <FormControl>
+        <FormLabel>Rol</FormLabel>
+        <Input
+          name="rol"
+          value={newUsuario.rol}
+          onChange={handleCreateChange}
+        />
+      </FormControl>
+      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+        <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>
+          Cancelar
+        </Button>
+        <Button onClick={handleCreateSave}>
+          Guardar
+        </Button>
+      </Box>
+    </Box>
+  </ModalDialog>
+</Modal>
+
 
       <Modal open={isModalOpen} onClose={handleModalClose}>
         <ModalDialog>

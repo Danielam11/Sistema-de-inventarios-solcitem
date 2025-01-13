@@ -18,7 +18,10 @@ import 'react-toastify/dist/ReactToastify.css';
 function fetchSales(setSales: (data: any[]) => void) {
   fetch('http://localhost:3000/api/sales')
     .then((response) => response.json())
-    .then((data) => setSales(data))
+    .then((data) => {
+      console.log(data);
+      setSales(data);
+    })
     .catch((error) => console.error('Error fetching sales:', error));
 }
 
@@ -90,7 +93,6 @@ export default function SalesTable() {
 
   return (
     <React.Fragment>
-      {/* Barra de búsqueda */}
       <Box sx={{ display: 'flex', gap: 1.5, padding: 2 }}>
         <FormControl sx={{ flex: 1 }}>
           <FormLabel>Buscar Ventas</FormLabel>
@@ -103,7 +105,6 @@ export default function SalesTable() {
         </FormControl>
       </Box>
 
-      {/* Tabla de ventas */}
       <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
         <Table stickyHeader>
           <thead>
@@ -122,13 +123,20 @@ export default function SalesTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredSales.map((sale) => (
-              console.log(sale),
+          {filteredSales.map((sale) => {
+            // Formatea la fecha
+            const formattedDate = new Date(sale.fecha_venta).toLocaleDateString('es-ES', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            });
+
+            return (
               <tr key={sale.venta_id}>
                 <td>{sale.venta_id}</td>
-                <td>{sale.fecha_venta}</td>
-                <td>{sale.usuario_id}</td>
+                <td>{formattedDate}</td>
                 <td>{sale.cliente_nombre}</td>
+                <td>{sale.usuario_id}</td>
                 <td>{sale.total}</td>
                 <td>{sale.subtotal}</td>
                 <td>{sale.producto_id}</td>
@@ -154,8 +162,9 @@ export default function SalesTable() {
                   </Dropdown>
                 </td>
               </tr>
-            ))}
-          </tbody>
+            );
+          })}
+        </tbody>
         </Table>
       </Sheet>
 

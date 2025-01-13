@@ -45,10 +45,11 @@ async function getAllSales() {
     const query = `
       SELECT v.venta_id, v.fecha_venta, v.total, v.subtotal, 
              c.nombre AS cliente_nombre, 
-             u.* -- Obtén todos los datos de la tabla Usuarios para depuración
+             u.* , dv.producto_id, dv.cantidad_productos, dv.precio_unitario
       FROM Ventas v
       LEFT JOIN Clientes c ON v.cliente_id = c.cliente_id
-      LEFT JOIN Usuarios u ON v.usuario_id = u.usuario_id`;
+      LEFT JOIN Usuarios u ON v.usuario_id = u.usuario_id
+      LEFT JOIN detalle_venta dv ON dv.detalle_id = v.venta_id`;
     const result = await pool.query(query);
     return result.rows;
   } catch (error) {

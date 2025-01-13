@@ -80,7 +80,7 @@ function MainContent() {
   };
 
   const handleOpenModal = () => {
-    if (['/dashboard/clientes', '/dashboard/proveedores'].includes(location.pathname)) {
+    if (['/dashboard/users', '/dashboard/clientes', '/dashboard/proveedores', '/dashboard/productos'].includes(location.pathname)) {
       setIsCreateModalOpen(true);
     }
   };
@@ -167,7 +167,15 @@ function MainContent() {
           }
         />
         <Route path="sales" element={<OrderTable />} />
-        <Route path="users" element={<Users />} />
+        <Route
+        path="users"
+        element={
+          <Users
+            isCreateModalOpen={isCreateModalOpen}
+            setIsCreateModalOpen={setIsCreateModalOpen}
+          />
+        }
+      />
         <Route
           path="proveedores"
           element={
@@ -177,7 +185,15 @@ function MainContent() {
             />
           }
         />
-        <Route path="productos" element={<Products />} />
+        <Route
+        path="productos"
+        element={
+          <Products
+            isCreateModalOpen={isCreateModalOpen}
+            setIsCreateModalOpen={setIsCreateModalOpen}
+          />
+        }
+      />
         <Route path="pedidos" element={<Orders/>} />
         <Route path="ventas" element={<Sales />} />
       </Routes>

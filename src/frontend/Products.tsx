@@ -21,6 +21,11 @@ import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+interface ProductsProps {
+  isCreateModalOpen: boolean;
+  setIsCreateModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 function fetchData(endpoint: string, setData: (data: any) => void) {
   fetch(`http://localhost:3000/api/${endpoint}`)
     .then((response) => {
@@ -106,8 +111,13 @@ function deleteProducto(
     .catch(onError);
 }
 
-export default function ProductTable() {
+export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: ProductsProps) {
   const [productos, setProductos] = useState<Producto[]>([]);
+  
+  useEffect(() => {
+    fetchData('products', setProductos);
+  }, []);
+
   interface Marca {
     marca_id: string;
     nombre: string;
@@ -127,7 +137,7 @@ export default function ProductTable() {
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  // const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProducto, setEditingProducto] = useState<Producto | null>(null);
   const [newProducto, setNewProducto] = useState<Producto>({
@@ -239,7 +249,7 @@ export default function ProductTable() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </FormControl>
-        <Button onClick={() => setIsCreateModalOpen(true)}>Añadir Producto</Button>
+        {/* <Button onClick={() => setIsCreateModalOpen(true)}>Añadir Producto</Button> */}
       </Box>
 
       <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
