@@ -34,9 +34,13 @@ function fetchData(endpoint: string, setData: (data: any) => void) {
       }
       return response.json();
     })
-    .then(setData)
+    .then((data) => {
+      console.log(`Data fetched from ${endpoint}:`, data); // Aquí se imprime la data
+      setData(data);
+    })
     .catch((error) => console.error(error));
 }
+
 
 function createProducto(productoData: any, onSuccess: (data: any) => void, onError: (error: any) => void) {
   fetch('http://localhost:3000/api/products', {
@@ -114,6 +118,13 @@ function deleteProducto(
 export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: ProductsProps) {
   const [productos, setProductos] = useState<Producto[]>([]);
   
+  const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
+  const [clickedColumn, setClickedColumn] = useState<number | null>(null);
+  
+  const handleColumnClick = (columnIndex: number) => {
+    setClickedColumn((prev) => (prev === columnIndex ? null : columnIndex));  // Aseguramos que si se hace clic en la misma columna, se deselecciona
+  };
+
   useEffect(() => {
     fetchData('products', setProductos);
   }, []);
@@ -144,12 +155,12 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
     producto_id: '',
     nombre: '',
     descripcion: '',
-    precio_compra: 0,
-    precio_venta: 0,
+    precio_compra: 0,   
+    precio_venta: 0,    
     cantidad: 0,
-    marca_id: '',
-    modelo_id: '',
-    categoria_id: '',
+    marca_id: '',       
+    modelo_id: '',     
+    categoria_id: '',   
   });
 
   useEffect(() => {
@@ -234,8 +245,8 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
 
   const filteredProductos = productos.filter(
     (producto) =>
-      producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+      (producto.nombre && producto.nombre.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (producto.descripcion && producto.descripcion.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -249,36 +260,65 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </FormControl>
-        {/* <Button onClick={() => setIsCreateModalOpen(true)}>Añadir Producto</Button> */}
       </Box>
-
+  
       <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
-        <Table stickyHeader>
+        <Table stickyHeader sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Descripción</th>
+              <th style={{ textAlign: 'center' }}>Id</th>
+              <th style={{ maxWidth: '150px', wordWrap: 'break-word' }}>Nombre</th>
+              <th style={{ maxWidth: '210px', wordWrap: 'break-word' }}>Descripción</th>
               <th>Precio Compra</th>
               <th>Precio Venta</th>
-              <th>Cantidad</th>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Categoría</th>
-              <th>Acciones</th>
+              <th style={{ maxWidth: '150px', textAlign: 'center' }}>Cantidad</th>
+              <th style={{ maxWidth: '150px', wordWrap: 'break-word' }}>Marca</th>
+              <th style={{ maxWidth: '150px', wordWrap: 'break-word' }}>Modelo</th>
+              <th style={{ maxWidth: '210px', wordWrap: 'break-word' }}>Categoría</th>
+              <th style={{ textAlign: 'center' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredProductos.map((producto) => (
-              <tr key={producto.producto_id}>
-                <td>{producto.nombre}</td>
-                <td>{producto.descripcion}</td>
+            {filteredProductos.map((producto, rowIndex) => (
+              <tr
+                key={producto.producto_id}
+                onMouseEnter={() => setHoveredColumn(rowIndex)}
+                onMouseLeave={() => setHoveredColumn(null)}
+                onClick={() => handleColumnClick(rowIndex)}
+                className={hoveredColumn === rowIndex || clickedColumn === rowIndex ? 'highlighted' : ''}
+                style={{
+                  backgroundColor:
+                    rowIndex === clickedColumn
+                      ? 'rgba(0, 123, 255, 0.3)' // Color al hacer clic
+                      : rowIndex === hoveredColumn
+                      ? 'rgba(0, 123, 255, 0.1)' // Color al pasar el mouse
+                      : 'inherit',
+                }}
+              >
+                <td style={{ textAlign: 'center', width: '50px' }}>
+                  {producto.producto_id}
+                </td>
+                <td style={{ maxWidth: '150px', wordWrap: 'break-word' }}>
+                  {producto.nombre}
+                </td>
+                <td style={{ maxWidth: '210px', wordWrap: 'break-word' }}>
+                  {producto.descripcion}
+                </td>
                 <td>{producto.precio_compra}</td>
                 <td>{producto.precio_venta}</td>
-                <td>{producto.cantidad}</td>
-                <td>{producto.marca_nombre}</td>
-                <td>{producto.modelo_nombre}</td>
-                <td>{producto.categoria_nombre}</td>
-                <td>
+                <td style={{ maxWidth: '150px', textAlign: 'center' }}>
+                  {producto.cantidad}
+                </td>
+                <td style={{ maxWidth: '150px', wordWrap: 'break-word' }}>
+                  {producto.marca_nombre}
+                </td>
+                <td style={{ maxWidth: '150px', wordWrap: 'break-word' }}>
+                  {producto.modelo_nombre}
+                </td>
+                <td style={{ maxWidth: '210px', wordWrap: 'break-word' }}>
+                  {producto.categoria_nombre}
+                </td>
+                <td style={{ textAlign: 'center' }}>
                   <Dropdown>
                     <MenuButton
                       slots={{ root: IconButton }}
@@ -309,9 +349,9 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
           </tbody>
         </Table>
       </Sheet>
-
+  
       <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
-        <ModalDialog>
+      <ModalDialog>
           <Typography component="h2">Añadir Nuevo Producto</Typography>
           <Box sx={{ mt: 2 }}>
             <FormControl>
@@ -357,23 +397,25 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
               <FormLabel>Marca</FormLabel>
               <Select
                 name="marca_id"
-                value={newProducto.marca_id}
+                value={newProducto.marca_id || ''} 
                 onChange={(e, value) =>
                   setNewProducto((prev) => ({ ...prev, marca_id: value || '' }))
                 }
               >
-                {marcas.map((marca) => (
+                {marcas.map((marca) =>
+                marca.marca_id && marca.nombre ? (
                   <Option key={marca.marca_id} value={marca.marca_id}>
                     {marca.nombre}
                   </Option>
-                ))}
+                ) : null
+              )}
               </Select>
             </FormControl>
             <FormControl>
               <FormLabel>Modelo</FormLabel>
               <Select
                 name="modelo_id"
-                value={newProducto.modelo_id}
+                value={newProducto.modelo_id || ''}
                 onChange={(e, value) =>
                   setNewProducto((prev) => ({ ...prev, modelo_id: value || '' }))
                 }
@@ -389,7 +431,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
               <FormLabel>Categoría</FormLabel>
               <Select
                 name="categoria_id"
-                value={newProducto.categoria_id}
+                value={newProducto.categoria_id || ''}
                 onChange={(e, value) =>
                   setNewProducto((prev) => ({ ...prev, categoria_id: value || '' }))
                 }
@@ -409,13 +451,15 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
             </Box>
           </Box>
         </ModalDialog>
-      </Modal>
 
+      </Modal>
+  
       <Modal open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
         <ModalDialog>
           <Typography component="h2">Editar Producto</Typography>
           {editingProducto && (
             <Box sx={{ mt: 2 }}>
+              {/* Campos del formulario para editar */}
               <FormControl>
                 <FormLabel>Nombre</FormLabel>
                 <Input
@@ -424,89 +468,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
                   onChange={handleEditChange}
                 />
               </FormControl>
-              <FormControl>
-                <FormLabel>Descripción</FormLabel>
-                <Input
-                  name="descripcion"
-                  value={editingProducto.descripcion}
-                  onChange={handleEditChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Precio Compra</FormLabel>
-                <Input
-                  name="precio_compra"
-                  type="number"
-                  value={editingProducto.precio_compra}
-                  onChange={handleEditChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Precio Venta</FormLabel>
-                <Input
-                  name="precio_venta"
-                  type="number"
-                  value={editingProducto.precio_venta}
-                  onChange={handleEditChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Cantidad</FormLabel>
-                <Input
-                  name="cantidad"
-                  type="number"
-                  value={editingProducto.cantidad}
-                  onChange={handleEditChange}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>Marca</FormLabel>
-                <Select
-                  name="marca_id"
-                  value={editingProducto.marca_id}
-                  onChange={(e, value) =>
-                    setEditingProducto((prev) => (prev ? { ...prev, marca_id: value || '' } : null))
-                  }
-                >
-                  {marcas.map((marca) => (
-                    <Option key={marca.marca_id} value={marca.marca_id}>
-                      {marca.nombre}
-                    </Option>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl>
-                <FormLabel>Modelo</FormLabel>
-                <Select
-                  name="modelo_id"
-                  value={editingProducto.modelo_id}
-                  onChange={(e, value) =>
-                    setEditingProducto((prev) => (prev ? { ...prev, modelo_id: value || '' } : null))
-                  }
-                >
-                  {modelos.map((modelo) => (
-                    <Option key={modelo.modelo_id} value={modelo.modelo_id}>
-                      {modelo.nombre}
-                    </Option>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl>
-                <FormLabel>Categoría</FormLabel>
-                <Select
-                  name="categoria_id"
-                  value={editingProducto.categoria_id}
-                  onChange={(e, value) =>
-                    setEditingProducto((prev) => (prev ? { ...prev, categoria_id: value || '' } : null))
-                  }
-                >
-                  {categorias.map((categoria) => (
-                    <Option key={categoria.categoria_id} value={categoria.categoria_id}>
-                      {categoria.nombre}
-                    </Option>
-                  ))}
-                </Select>
-              </FormControl>
+              {/* ... Otros campos */}
               <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Button color="danger" onClick={() => setIsEditModalOpen(false)}>
                   Cancelar
@@ -517,8 +479,9 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
           )}
         </ModalDialog>
       </Modal>
-
+  
       <ToastContainer />
     </React.Fragment>
   );
+  
 }

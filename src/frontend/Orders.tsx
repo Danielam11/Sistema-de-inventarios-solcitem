@@ -19,11 +19,9 @@ function fetchPedidos(setPedidos: (data: any[]) => void) {
   fetch('http://localhost:3000/api/orders')
     .then((response) => response.json())
     .then((data) => {
-      const pedidosConDetalles = data.map((pedido: any) => ({
-        ...pedido,
-        detalles: pedido.detalles || [], // Asegurar que "detalles" siempre sea un array
-      }));
-      setPedidos(pedidosConDetalles);
+      console.log(data);
+      // Procesar los datos si es necesario
+      setPedidos(data);
     })
     .catch((error) => console.error('Error fetching orders:', error));
 }
@@ -33,10 +31,10 @@ export default function OrderTable() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchPedidos(setPedidos); // Carga los pedidos y detalles combinados desde la API
+    fetchPedidos(setPedidos);
   }, []);
 
-  const handleDelete = (pedidoId: any) => {
+  const handleDelete = (pedidoId: number) => {
     fetch(`http://localhost:3000/api/orders/${pedidoId}`, {
       method: 'DELETE',
     })
@@ -57,8 +55,13 @@ export default function OrderTable() {
     (pedido) =>
       pedido.fecha_pedido.includes(searchTerm) ||
       pedido.proveedor_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pedido.usuario_nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+      pedido.usuario_email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const formatFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    return date.toLocaleDateString();
+  };
 
   return (
     <React.Fragment>
@@ -66,7 +69,7 @@ export default function OrderTable() {
         <FormControl sx={{ flex: 1 }}>
           <FormLabel>Buscar Pedidos</FormLabel>
           <Input
-            placeholder="Buscar por fecha, proveedor o usuario"
+            placeholder="Buscar por fecha, proveedor o email"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -79,62 +82,39 @@ export default function OrderTable() {
             <tr>
               <th>Fecha</th>
               <th>Proveedor</th>
-              <th>Usuario</th>
+              <th>Email Usuario</th>
               <th>Total</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Precio Unitario</th>
-              <th>Subtotal</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-  {filteredPedidos.map((pedido) =>
-    (pedido.detalles || []).map(
-      (
-        detalle: {
-          detalle_id: any;
-          producto_nombre: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
-          cantidad: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
-          precio_unitario: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
-          subtotal: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
-        },
-        index: number
-      ) => (
-        <tr key={`${pedido.pedido_id}-${detalle.detalle_id}-${index}`}>
-          <td>{pedido.fecha_pedido}</td>
-          <td>{pedido.proveedor_nombre}</td>
-          <td>{pedido.usuario_nombre}</td>
-          <td>{index === 0 ? pedido.total : ''}</td>
-          <td>{detalle.producto_nombre}</td>
-          <td>{detalle.cantidad}</td>
-          <td>{detalle.precio_unitario}</td>
-          <td>{detalle.subtotal}</td>
-          <td>
-            {index === 0 && (
-              <Dropdown>
-                <MenuButton
-                  slots={{ root: IconButton }}
-                  slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
-                >
-                  <MoreHorizRoundedIcon />
-                </MenuButton>
-                <Menu>
-                  <MenuItem
-                    color="danger"
-                    onClick={() => handleDelete(pedido.pedido_id)}
-                  >
-                    Eliminar
-                  </MenuItem>
-                </Menu>
-              </Dropdown>
-            )}
-          </td>
-        </tr>
-      )
-    )
-  )}
-</tbody>
+            {filteredPedidos.map((pedido) => (
+              <tr key={pedido.pedido_id}>
+                <td>{formatFecha(pedido.fecha_pedido)}</td>
+                <td>{pedido.proveedor_nombre}</td>
+                <td>{pedido.usuario_email}</td>
+                <td>{pedido.total}</td>
+                <td>
+                  <Dropdown>
+                    <MenuButton
+                      slots={{ root: IconButton }}
+                      slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
+                    >
+                      <MoreHorizRoundedIcon />
+                    </MenuButton>
+                    <Menu>
+                      <MenuItem
+                        color="danger"
+                        onClick={() => handleDelete(pedido.pedido_id)}
+                      >
+                        Eliminar
+                      </MenuItem>
+                    </Menu>
+                  </Dropdown>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </Table>
       </Sheet>
 

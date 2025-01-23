@@ -16,24 +16,24 @@ async function createProduct(req, res) {
   const {
     nombre,
     descripcion,
-    precioCompra,
-    precioVenta,
+    precio_compra,
+    precio_venta,
     cantidad,
-    marcaId,
-    categoriaId,
-    modeloId,
+    marca_id,
+    categoria_id,
+    modelo_id,
   } = req.body;
 
   try {
     const newProduct = await productModel.createProduct(
       nombre,
       descripcion,
-      precioCompra,
-      precioVenta,
+      precio_compra,
+      precio_venta,
       cantidad,
-      marcaId,
-      categoriaId,
-      modeloId
+      marca_id,
+      categoria_id,
+      modelo_id
     );
     res.status(201).json({
       message: "Producto creado exitosamente",
@@ -66,12 +66,12 @@ async function updateProduct(req, res) {
   const {
     nombre,
     descripcion,
-    precioCompra,
-    precioVenta,
+    precio_compra,
+    precio_venta,
     cantidad,
-    marcaId,
-    categoriaId,
-    modeloId,
+    marca_id,
+    categoria_id,
+    modelo_id,
   } = req.body;
 
   try {
@@ -79,12 +79,12 @@ async function updateProduct(req, res) {
       id,
       nombre,
       descripcion,
-      precioCompra,
-      precioVenta,
+      precio_compra,
+      precio_venta,
       cantidad,
-      marcaId,
-      categoriaId,
-      modeloId
+      marca_id,
+      categoria_id,
+      modelo_id
     );
     res.status(200).json({
       message: "Producto actualizado exitosamente",
