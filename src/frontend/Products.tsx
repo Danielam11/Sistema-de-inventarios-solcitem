@@ -177,7 +177,15 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    console.log(`Editando ${name}: ${value}`);
     setEditingProducto((prev: Producto | null) => (prev ? { ...prev, [name]: value } : null));
+  };
+
+  const handleSelectChange = (field: string, setField: React.Dispatch<React.SetStateAction<Producto | null>>) => {
+    return (e: any, value: string | null) => {
+      console.log(`Seleccionando ${field}: ${value}`); // Verificar qué valor se selecciona
+      setField((prev) => (prev ? { ...prev, [field]: value || '' } : null));
+    };
   };
 
   const handleCreateSave = () => {
@@ -186,6 +194,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
       (createdProducto) => {
         setProductos((prev: Producto[]) => [createdProducto, ...prev]);
         toast.success('Producto creado exitosamente.');
+        fetchData('products', setProductos);
         setIsCreateModalOpen(false);
         setNewProducto({
           producto_id: '',
@@ -219,6 +228,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
           )
         );
         toast.success('Producto actualizado exitosamente.');
+        fetchData('products', setProductos);
         setIsEditModalOpen(false);
         setEditingProducto(null);
       },
@@ -304,8 +314,10 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
                 <td style={{ maxWidth: '210px', wordWrap: 'break-word' }}>
                   {producto.descripcion}
                 </td>
-                <td>{producto.precio_compra}</td>
-                <td>{producto.precio_venta}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {producto.precio_compra}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {producto.precio_venta}</td>
                 <td style={{ maxWidth: '150px', textAlign: 'center' }}>
                   {producto.cantidad}
                 </td>
@@ -459,7 +471,6 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
           <Typography component="h2">Editar Producto</Typography>
           {editingProducto && (
             <Box sx={{ mt: 2 }}>
-              {/* Campos del formulario para editar */}
               <FormControl>
                 <FormLabel>Nombre</FormLabel>
                 <Input
@@ -468,7 +479,83 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
                   onChange={handleEditChange}
                 />
               </FormControl>
-              {/* ... Otros campos */}
+              <FormControl>
+                <FormLabel>Descripción</FormLabel>
+                <Input
+                  name="descripcion"
+                  value={editingProducto.descripcion}
+                  onChange={handleEditChange}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Precio Compra</FormLabel>
+                <Input
+                  name="precio_compra"
+                  type="number"
+                  value={editingProducto.precio_compra}
+                  onChange={handleEditChange}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Precio Venta</FormLabel>
+                <Input
+                  name="precio_venta"
+                  type="number"
+                  value={editingProducto.precio_venta}
+                  onChange={handleEditChange}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Cantidad</FormLabel>
+                <Input
+                  name="cantidad"
+                  type="number"
+                  value={editingProducto.cantidad}
+                  onChange={handleEditChange}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Marca</FormLabel>
+                <Select
+    name="marca_id"
+    value={editingProducto?.marca_id || ''} // Asegurarse que si está vacío no se quede con undefined
+    onChange={handleSelectChange("marca_id", setEditingProducto)} // Usar la función modificada
+  >
+    {marcas.map((marca) => (
+      <Option key={marca.marca_id} value={marca.marca_id}>
+        {marca.nombre}
+      </Option>
+    ))}
+  </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Modelo</FormLabel>
+                <Select
+    name="modelo_id"
+    value={editingProducto?.modelo_id || ''}
+    onChange={handleSelectChange("modelo_id", setEditingProducto)}
+  >
+    {modelos.map((modelo) => (
+      <Option key={modelo.modelo_id} value={modelo.modelo_id}>
+        {modelo.nombre}
+      </Option>
+    ))}
+  </Select>
+              </FormControl>
+              <FormControl>
+                <FormLabel>Categoría</FormLabel>
+                <Select
+    name="categoria_id"
+    value={editingProducto?.categoria_id || ''}
+    onChange={handleSelectChange("categoria_id", setEditingProducto)}
+  >
+    {categorias.map((categoria) => (
+      <Option key={categoria.categoria_id} value={categoria.categoria_id}>
+        {categoria.nombre}
+      </Option>
+    ))}
+  </Select>
+              </FormControl>
               <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Button color="danger" onClick={() => setIsEditModalOpen(false)}>
                   Cancelar
