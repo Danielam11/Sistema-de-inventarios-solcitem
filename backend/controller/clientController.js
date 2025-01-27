@@ -24,10 +24,27 @@ async function getClientById(req, res) {
   }
 }
 
+
+async function getClientByIdentificacion(req, res) {
+  const { identificacion } = req.params;
+  try {
+    const client = await clientModel.getClientByIdentificacion(identificacion);
+    if (!client) {
+      console.log(`Cliente con identificación ${identificacion} no encontrado.`);
+      return res.status(200).json({ message: "Cliente no encontrado", client: null });
+    }
+    res.status(200).json(client);
+  } catch (error) {
+    console.error("Error al obtener el cliente por identificación:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+}
+
 async function createClient(req, res) {
   const { identificacion, nombre, direccion, telefono, email } = req.body;
 
-  const existingClient = await clientModel.getClientById(identificacion);
+  // Verificar si el cliente ya existe por identificación
+  const existingClient = await clientModel.getClientByIdentificacion(identificacion);
   if (existingClient) {
     return res.status(400).json({ error: "El cliente ya está registrado" });
   }
@@ -98,6 +115,7 @@ async function deleteClient(req, res) {
 module.exports = {
   getAllClients,
   getClientById,
+  getClientByIdentificacion,
   createClient,
   updateClient,
   deleteClient,

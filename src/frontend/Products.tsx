@@ -276,7 +276,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
         <Table stickyHeader sx={{ tableLayout: 'auto' }}>
           <thead>
             <tr>
-              <th style={{ textAlign: 'center' }}>Id</th>
+              <th style={{ textAlign: 'center' }}>Producto Id</th>
               <th style={{ maxWidth: '150px', wordWrap: 'break-word' }}>Nombre</th>
               <th style={{ maxWidth: '210px', wordWrap: 'break-word' }}>Descripción</th>
               <th>Precio Compra</th>

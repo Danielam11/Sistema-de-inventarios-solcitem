@@ -2,10 +2,10 @@ const salesModel = require("../model/saleModel");
 
 // Crear una nueva venta
 function createSale(req, res) {
-  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } = req.body;
+  const { fecha_venta, clienteId, usuarioId, total, subtotal } = req.body; // Cambiado a fecha_venta
 
   salesModel
-    .createSale(fechaVenta, clienteId, usuarioId, total, subtotal, detalles)
+    .createSale(fecha_venta, clienteId, usuarioId, total, subtotal) // Cambiado a fecha_venta
     .then((sale) => {
       res.status(201).json({
         message: "Venta creada exitosamente",
@@ -65,29 +65,22 @@ function deleteSale(req, res) {
 }
 
 // Actualizar una venta existente
-async function updateSale(req, res) {
+function updateSale(req, res) {
   const { id } = req.params;
-  const { fechaVenta, clienteId, usuarioId, total, subtotal, detalles } = req.body;
+  const { fecha_venta, clienteId, usuarioId, total, subtotal } = req.body; // Cambiado a fecha_venta
 
-  try {
-    const sale = await salesModel.updateSale(
-      id,
-      fechaVenta,
-      clienteId,
-      usuarioId,
-      total,
-      subtotal,
-      detalles
-    );
-
-    res.status(200).json({
-      message: "Venta actualizada exitosamente",
-      sale,
+  salesModel
+    .updateSale(id, fecha_venta, clienteId, usuarioId, total, subtotal) // Cambiado a fecha_venta
+    .then((sale) => {
+      res.status(200).json({
+        message: "Venta actualizada exitosamente",
+        sale,
+      });
+    })
+    .catch((error) => {
+      console.error("Error al actualizar la venta:", error.message);
+      res.status(500).json({ error: "Error al actualizar la venta" });
     });
-  } catch (error) {
-    console.error("Error al actualizar la venta:", error.message);
-    res.status(500).json({ error: "Error al actualizar la venta" });
-  }
 }
 
 module.exports = {
