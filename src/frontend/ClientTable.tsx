@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react'; // Add useRef here
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
 import Checkbox from '@mui/joy/Checkbox';
@@ -21,7 +21,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Modal from '@mui/joy/Modal';
 import ModalDialog from '@mui/joy/ModalDialog';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 interface ClientTableProps {
   isCreateModalOpen: boolean;
@@ -36,16 +36,16 @@ function fetchClientes(setClientes: (data: any[]) => void) {
 }
 
 function updateCliente(
-  clienteId: string | number, // Declara el tipo del ID
+  clienteId: string | number,
   clienteData: {
-  identificacion: string;
-  nombre: string;
-  direccion: string;
-  telefono: string;
-  email: string;
-  }, // Declara el tipo del cliente
-  onSuccess: (updatedCliente: any) => void, // Tipo de la función de éxito
-  onError: (error: any) => void // Tipo de la función de error
+    identificacion: string;
+    nombre: string;
+    direccion: string;
+    telefono: string;
+    email: string;
+  },
+  onSuccess: (updatedCliente: any) => void,
+  onError: (error: any) => void
 ) {
   fetch(`http://localhost:3000/api/clients/${clienteId}`, {
     method: 'PUT',
@@ -122,9 +122,9 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
   const [clientes, setClientes] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selected, setSelected] = useState<readonly string[]>([]);
-  const [editingCliente, setEditingCliente] = useState<any>(null); // Cliente en edición
-  const [isModalOpen, setIsModalOpen] = useState(false); // Control del modal
-  const [isFormValid, setIsFormValid] = useState(false); // Estado de validación del formulario
+  const [editingCliente, setEditingCliente] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
   const [newCliente, setNewCliente] = useState({
     identificacion: '',
     nombre: '',
@@ -133,8 +133,68 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
     email: '',
   });
 
+  // Move useRef to the top level
+  const errorFlag = useRef(false);
+  const errorTimeout = useRef<number | null>(null);
+
   const handleCreateChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
+
+    if ((name === "identificacion" || name === "telefono") && !/^\d*$/.test(value)) {
+      if (!errorFlag.current) {
+        errorFlag.current = true; // Set the flag to true to prevent duplicate alerts
+        notifyError(`Solo se permiten números en el campo ${name === "identificacion" ? "identificación" : "teléfono"}.`);
+  
+        // Clear any previous timeout
+        if (errorTimeout.current !== null) {
+          clearTimeout(errorTimeout.current);
+        }
+  
+        // Reset the flag after 3 seconds
+        errorTimeout.current = window.setTimeout(() => {
+          errorFlag.current = false; // Reset the flag
+        }, 3000); // 3000 ms = 3 seconds
+      }
+      return;
+    }
+
+
+    if ((name === "nombre" || name === "direccion") && !/^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ.,-]*$/.test(value)) {
+      if (!errorFlag.current) {
+        errorFlag.current = true; // Set the flag to true to prevent duplicate alerts
+        notifyError(`No se permiten caracteres especiales en el campo ${name === "nombre" ? "nombre" : "dirección"}.`);
+  
+        // Clear any previous timeout
+        if (errorTimeout.current !== null) {
+          clearTimeout(errorTimeout.current);
+        }
+  
+        // Reset the flag after 3 seconds
+        errorTimeout.current = window.setTimeout(() => {
+          errorFlag.current = false; // Reset the flag
+        }, 3000); // 3000 ms = 3 seconds
+      }
+      return;
+    }
+
+    // if (name === "email" && !/^[\w.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/.test(value)) {
+    //   if (!errorFlag.current) {
+    //     errorFlag.current = true; // Set the flag to true to prevent duplicate alerts
+    //     notifyError("Por favor, ingresa un correo electrónico válido.");
+  
+    //     // Clear any previous timeout
+    //     if (errorTimeout.current !== null) {
+    //       clearTimeout(errorTimeout.current);
+    //     }
+  
+    //     // Reset the flag after 3 seconds
+    //     errorTimeout.current = window.setTimeout(() => {
+    //       errorFlag.current = false; // Reset the flag
+    //     }, 3000); // 3000 ms = 3 seconds
+    //   }
+    //   return;
+    // }
+
     setNewCliente((prev) => ({ ...prev, [name]: value }));
   };
   
@@ -458,28 +518,30 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
           <Typography component="h2">Añadir Nuevo Cliente</Typography>
           <Box sx={{ mt: 2 }}>
             <FormControl>
-              <FormLabel>Identificación</FormLabel>
-              <Input
-                name="identificacion"
-                value={newCliente.identificacion}
-                onChange={handleCreateChange}
-              />
+            <FormLabel>Identificación</FormLabel>
+            <Input
+              name="identificacion"
+              value={newCliente.identificacion}
+              onChange={handleCreateChange}
+              
+              slotProps={{ input: { maxLength: 13 } }}
+            />
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Nombre</FormLabel>
-              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} />
+              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} slotProps={{ input: { maxLength: 255 } }}/>
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
-              <Input name="direccion" value={newCliente.direccion} onChange={handleCreateChange} />
+              <Input name="direccion" value={newCliente.direccion} onChange={handleCreateChange} slotProps={{ input: { maxLength: 255 } }}/>
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
-              <Input name="telefono" value={newCliente.telefono} onChange={handleCreateChange} />
+              <Input name="telefono" value={newCliente.telefono} onChange={handleCreateChange} slotProps={{ input: { maxLength: 10 } }}/>
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
-              <Input name="email" value={newCliente.email} onChange={handleCreateChange} />
+              <Input name="email" value={newCliente.email} onChange={handleCreateChange} slotProps={{ input: { maxLength: 255 } }} />
             </FormControl>
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>
