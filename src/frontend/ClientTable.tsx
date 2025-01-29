@@ -140,20 +140,39 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
   const handleCreateChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
 
-    if ((name === "identificacion" || name === "telefono") && !/^\d*$/.test(value)) {
+    if (name === "telefono" && !/^\d*$/.test(value)) {
       if (!errorFlag.current) {
-        errorFlag.current = true; // Set the flag to true to prevent duplicate alerts
-        notifyError(`Solo se permiten números en el campo ${name === "identificacion" ? "identificación" : "teléfono"}.`);
-  
-        // Clear any previous timeout
+        errorFlag.current = true; 
+        notifyError("Solo se permiten números en el campo teléfono.");
+    
+        // Limpiar timeout anterior
         if (errorTimeout.current !== null) {
           clearTimeout(errorTimeout.current);
         }
-  
-        // Reset the flag after 3 seconds
+    
+        // Restablecer la alerta después de 3s
         errorTimeout.current = window.setTimeout(() => {
-          errorFlag.current = false; // Reset the flag
-        }, 3000); // 3000 ms = 3 seconds
+          errorFlag.current = false; 
+        }, 3000);
+      }
+      return;
+    }
+    
+    // Validación para IDENTIFICACION (solo letras y números)
+    if (name === "identificacion" && !/^[A-Za-z0-9]*$/.test(value)) {
+      if (!errorFlag.current) {
+        errorFlag.current = true;
+        notifyError("Solo se permiten letras y/o números en el campo identificación.");
+    
+        // Limpiar timeout anterior
+        if (errorTimeout.current !== null) {
+          clearTimeout(errorTimeout.current);
+        }
+    
+        // Restablecer la alerta después de 3s
+        errorTimeout.current = window.setTimeout(() => {
+          errorFlag.current = false; 
+        }, 3000);
       }
       return;
     }
@@ -177,23 +196,24 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
       return;
     }
 
-    // if (name === "email" && !/^[\w.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/.test(value)) {
-    //   if (!errorFlag.current) {
-    //     errorFlag.current = true; // Set the flag to true to prevent duplicate alerts
-    //     notifyError("Por favor, ingresa un correo electrónico válido.");
-  
-    //     // Clear any previous timeout
-    //     if (errorTimeout.current !== null) {
-    //       clearTimeout(errorTimeout.current);
-    //     }
-  
-    //     // Reset the flag after 3 seconds
-    //     errorTimeout.current = window.setTimeout(() => {
-    //       errorFlag.current = false; // Reset the flag
-    //     }, 3000); // 3000 ms = 3 seconds
-    //   }
-    //   return;
-    // }
+    if (name === "email" && !/^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ@!.-]*$/.test(value)) {
+      if (!errorFlag.current) {
+        errorFlag.current = true; // Evita alertas duplicadas
+        notifyError("Por favor, ingresa un correo electrónico válido.");
+    
+        if (errorTimeout.current !== null) {
+          clearTimeout(errorTimeout.current);
+        }
+    
+        errorTimeout.current = window.setTimeout(() => {
+          errorFlag.current = false; // Restablece el flag
+        }, 3000);
+      }
+
+      
+      return;
+    }
+    
 
     setNewCliente((prev) => ({ ...prev, [name]: value }));
   };
@@ -255,10 +275,10 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
       const emailRegex = /^[\w.-]+@[\w-]+(\.[\w-]+)+$/;
 
       const isValid =
-        nombre && nombre.length <= 255 &&
-        email && email.length <= 255 && emailRegex.test(email) &&
+        nombre && nombre.length <= 50 &&
+        email && email.length <= 30 && emailRegex.test(email) &&
         telefono && telefono.length <= 10 && /^\d*$/.test(telefono) &&
-        direccion && direccion.length <= 255;
+        direccion && direccion.length <= 50;
 
       setIsFormValid(isValid);
     }
@@ -300,7 +320,116 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
     );
   };
 
+  // =====================
+// 1. Funciones de validación
+// =====================
+
+// Valida cédula ecuatoriana con algoritmo de módulo 10
+function validateCedula(cedula: string): boolean {
+  if (cedula.length !== 10) return false;
+  // Los dos primeros dígitos deben ser de 01 a 24
+  const provincia = parseInt(cedula.slice(0, 2), 10);
+  if (provincia < 1 || provincia > 24) return false;
+
+  let total = 0;
+  const digitos = cedula.split('').map(Number);
+  const ultimoDigito = digitos[9];
+
+  for (let i = 0; i < 9; i++) {
+    let valor = digitos[i];
+    // Si está en posición par (índice impar), se multiplica x2
+    // (Ojo: en la cédula ecuatoriana se toma en cuenta la posición: impares 0,2,4,6,8)
+    if (i % 2 === 0) {
+      valor *= 2;
+      if (valor > 9) valor -= 9;
+    }
+    total += valor;
+  }
+
+  const mod = total % 10;
+  const digitoVerificador = mod === 0 ? 0 : 10 - mod;
+  return digitoVerificador === ultimoDigito;
+}
+
+// Valida RUC ecuatoriano de manera simplificada
+function validateRuc(ruc: string): boolean {
+  if (ruc.length !== 13) return false;
+  // Los dos primeros dígitos entre 01 y 24
+  const provincia = parseInt(ruc.slice(0, 2), 10);
+  if (provincia < 1 || provincia > 24 || provincia === 30) return false;
+
+  // Los últimos 3 dígitos deben ser mayor que 000 (ej. 001, 002, ...)
+  const suffix = parseInt(ruc.slice(10, 13), 10);
+  if (suffix < 1) return false;
+
+  // Si el tercer dígito es < 6, usualmente corresponde a persona natural;
+  // validamos los primeros 10 dígitos como cédula.
+  const tercerDigito = parseInt(ruc[2], 10);
+  if (tercerDigito < 6) {
+    const cedulaPart = ruc.slice(0, 10);
+    if (!validateCedula(cedulaPart)) {
+      return false;
+    }
+  }
+
+  // (Opcional) Podrías aquí agregar más validaciones para RUC de sociedades (9) o instituciones públicas (6).
+  return true;
+}
+
+// Valida si es cédula (10 dígitos), RUC (13 dígitos) o pasaporte (alfanumérico, long. 6-20, por ejemplo).
+function validateDocumentoEcuatoriano(doc: string): boolean {
+  doc = doc.trim();
+
+  // Si es solo números, puede ser cédula o RUC
+  if (/^\d+$/.test(doc)) {
+    if (doc.length === 10) {
+      // Posible cédula
+      return validateCedula(doc);
+    } else if (doc.length === 13) {
+      // Posible RUC
+      return validateRuc(doc);
+    } else {
+      // Ni longitud 10 ni 13 => no cumple cédula/RUC
+      return false;
+    }
+  } else {
+    // Asumimos pasaporte (alfanumérico entre 6 y 20 caracteres)
+    // El regex /^[A-Za-z0-9]+$/ exige que sea solo letras y números
+    if (/^[A-Za-z0-9]+$/.test(doc) && doc.length >= 6 && doc.length <= 20) {
+      return true;
+    }
+    return false;
+  }
+}
+
   const handleCreateSave = async () => {
+    const { identificacion, nombre, direccion, telefono, email } = newCliente;
+
+    if (
+      identificacion.trim() === '' ||
+      nombre.trim() === '' ||
+      direccion.trim() === '' ||
+      telefono.trim() === '' ||
+      email.trim() === ''
+    ) {
+      notifyError('Por favor completa todos los campos antes de guardar.');
+      return; 
+    }
+
+     // Validación de formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+    if (!emailRegex.test(email)) {
+      notifyError('Por favor ingresa un correo electrónico válido.');
+      return;
+    }
+
+    if (!validateDocumentoEcuatoriano(identificacion)) {
+      notifyError(
+        'Documento inválido. Asegúrate de ingresar una cédula, RUC o pasaporte correcto.'
+      );
+      return;
+    }
+  
     try {
       await createClient(
         newCliente,
@@ -317,6 +446,15 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
             console.warn('La respuesta del cliente no es válida:', createdCliente);
             notifyError('No se pudo procesar la respuesta del cliente.');
           }
+
+          setNewCliente({
+            identificacion: '',
+            nombre: '',
+            direccion: '',
+            telefono: '',
+            email: '',
+          });
+
           setIsCreateModalOpen(false);
         },
         (error) => {
@@ -529,7 +667,7 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Nombre</FormLabel>
-              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} slotProps={{ input: { maxLength: 255 } }}/>
+              <Input name="nombre" value={newCliente.nombre} onChange={handleCreateChange} slotProps={{ input: { maxLength: 50 } }}/>
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
@@ -541,7 +679,7 @@ export default function ClientTable({ isCreateModalOpen, setIsCreateModalOpen }:
             </FormControl>
             <FormControl>
               <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
-              <Input name="email" value={newCliente.email} onChange={handleCreateChange} slotProps={{ input: { maxLength: 255 } }} />
+              <Input name="email" value={newCliente.email} onChange={handleCreateChange} slotProps={{ input: { maxLength: 25 } }} />
             </FormControl>
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>
