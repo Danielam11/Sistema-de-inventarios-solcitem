@@ -1,40 +1,38 @@
 const pool = require("../config/db");
 
 // Crear un nuevo pedido (order)
-async function createOrder(fechaPedido, proveedorId, usuarioId, total, detalles) {
+// Crear un nuevo pedido sin enviar fecha_pedido ni subtotal
+async function createOrder(proveedorId, usuarioId, total, detalles) {
   try {
-    // Insertar el pedido (order)
+    // Insertar el pedido
     const query = `
-        INSERT INTO Pedidos (fecha_pedido, proveedor_id, usuario_id, total)
-        VALUES ($1, $2, $3, $4) RETURNING *`;
-    const values = [fechaPedido, proveedorId, usuarioId, total];
+        INSERT INTO Pedidos (proveedor_id, usuario_id, total)
+        VALUES ($1, $2, $3) RETURNING *`;
+    const values = [proveedorId, usuarioId, total];
     const result = await pool.query(query, values);
     const order = result.rows[0];
 
-    // Insertar los detalles del pedido (order details) usando map y Promise.all
+    // Insertar los detalles del pedido SIN subtotal (lo calcula la BD)
     const detalleQueries = detalles.map((detalle) => {
       const detalleQuery = `
-          INSERT INTO Detalle_pedido (pedido_id, producto_id, proveedor_id, cantidad, precio_unitario, subtotal)
-          VALUES ($1, $2, $3, $4, $5, $6)`;
+          INSERT INTO Detalle_pedido (pedido_id, producto_id, cantidad, precio_unitario)
+          VALUES ($1, $2, $3, $4)`;
       const detalleValues = [
         order.pedido_id,
         detalle.productoId,
-        detalle.proveedorId,
         detalle.cantidad,
         detalle.precioUnitario,
-        detalle.subtotal,
       ];
       return pool.query(detalleQuery, detalleValues);
     });
 
-    // Ejecutar todas las consultas en paralelo
     await Promise.all(detalleQueries);
-
     return order;
   } catch (error) {
     throw new Error("Error al crear el pedido (order): " + error.message);
   }
 }
+
 
 // Obtener todos los pedidos (orders)
 async function getAllOrders() {
@@ -42,7 +40,7 @@ async function getAllOrders() {
     const query = `
       SELECT p.pedido_id, p.fecha_pedido, p.total, 
              pr.nombre AS proveedor_nombre, 
-             u.email AS usuario_email -- Ajustado para usar la columna 'email'
+             u.email AS usuario_email
       FROM Pedidos p
       LEFT JOIN Proveedores pr ON p.proveedor_id = pr.proveedor_id
       LEFT JOIN Usuarios u ON p.usuario_id = u.usuario_id`;
@@ -54,12 +52,13 @@ async function getAllOrders() {
 }
 
 // Obtener un pedido (order) por ID
+// Obtener un pedido con sus detalles
 async function getOrderById(id) {
   try {
     const orderQuery = `
       SELECT p.pedido_id, p.fecha_pedido, p.total, 
              pr.nombre AS proveedor_nombre, 
-             u.email AS usuario_email -- Ajustado para usar la columna 'email'
+             u.email AS usuario_email
       FROM Pedidos p
       LEFT JOIN Proveedores pr ON p.proveedor_id = pr.proveedor_id
       LEFT JOIN Usuarios u ON p.usuario_id = u.usuario_id
@@ -71,9 +70,10 @@ async function getOrderById(id) {
       throw new Error("Pedido (order) no encontrado");
     }
 
+    // Consultar detalles sin enviar subtotal, la BD lo calcula
     const detalleQuery = `
       SELECT dp.detalle_id, dp.producto_id, p.nombre AS producto_nombre, 
-             dp.cantidad, dp.precio_unitario, dp.subtotal
+             dp.cantidad, dp.precio_unitario, dp.cantidad * dp.precio_unitario AS subtotal
       FROM Detalle_pedido dp
       LEFT JOIN Productos p ON dp.producto_id = p.producto_id
       WHERE dp.pedido_id = $1`;
@@ -101,48 +101,40 @@ async function deleteOrder(id) {
 }
 
 // Actualizar un pedido (order)
-async function updateOrder(id, fechaPedido, proveedorId, usuarioId, total, detalles) {
+// Actualizar un pedido sin modificar fecha_pedido ni subtotal
+async function updateOrder(id, proveedorId, usuarioId, total, detalles) {
   try {
-    // 1. Actualizar la cabecera del pedido
     const query = `
         UPDATE Pedidos
-        SET fecha_pedido = $1, proveedor_id = $2, usuario_id = $3, total = $4
-        WHERE pedido_id = $5
+        SET proveedor_id = $1, usuario_id = $2, total = $3
+        WHERE pedido_id = $4
         RETURNING *`;
-    const values = [fechaPedido, proveedorId, usuarioId, total, id];
+    const values = [proveedorId, usuarioId, total, id];
     const result = await pool.query(query, values);
     const updatedOrder = result.rows[0];
 
-    // 2. Eliminar los detalles antiguos del pedido
+    // Eliminar detalles antiguos
     const deleteQuery = `DELETE FROM Detalle_pedido WHERE pedido_id = $1`;
     await pool.query(deleteQuery, [id]);
 
-    // 3. Insertar los nuevos detalles
+    // Insertar nuevos detalles sin subtotal
     const detalleQueries = detalles.map((detalle) => {
       const detalleQuery = `
-          INSERT INTO Detalle_pedido (pedido_id, producto_id, proveedor_id, cantidad, precio_unitario, subtotal)
-          VALUES ($1, $2, $3, $4, $5, $6)`;
+          INSERT INTO Detalle_pedido (pedido_id, producto_id, cantidad, precio_unitario)
+          VALUES ($1, $2, $3, $4)`;
       const detalleValues = [
         updatedOrder.pedido_id,
         detalle.productoId,
-        detalle.proveedorId,
         detalle.cantidad,
         detalle.precioUnitario,
-        detalle.subtotal,
       ];
       return pool.query(detalleQuery, detalleValues);
     });
 
-    // Ejecutar todas las consultas de detalle en paralelo
     await Promise.all(detalleQueries);
-
-    // Retornar el pedido actualizado
     return updatedOrder;
   } catch (error) {
-    throw new Error(
-      "Error al actualizar el pedido completo (cabecera + detalles): " +
-        error.message
-    );
+    throw new Error("Error al actualizar el pedido: " + error.message);
   }
 }
 

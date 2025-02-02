@@ -64,7 +64,7 @@ function MainContent() {
     },
     "/dashboard/pedidos": {
       title: "Pedidos",
-      buttonText: "Añadir nuevo pedido",
+
       breadcrumb: ["Dashboard", "Reportes", "Pedidos"],
     },
     "/dashboard/ventas": {
@@ -169,12 +169,7 @@ function MainContent() {
           {currentRoute.title}
         </Typography>
         {currentRoute.buttonText && (
-          <Button
-            color="primary"
-            startDecorator={<DownloadRoundedIcon />}
-            size="sm"
-            onClick={handleOpenModal}
-          >
+          <Button color="primary" size="sm" onClick={handleOpenModal}>
             {currentRoute.buttonText}
           </Button>
         )}

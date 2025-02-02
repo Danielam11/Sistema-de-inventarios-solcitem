@@ -29,13 +29,15 @@ const getUserIdFromToken = () => {
   return decodedToken.userId; // Obtener el userId desde el token
 };
 
-interface CreateSaleFormProps {
-  onSaleCreated?: () => void;
+interface CreateOrderFormProps {
+  onOrderCreated?: () => void;
 }
 
-export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
+export default function CreateOrderForm({
+  onOrderCreated,
+}: CreateOrderFormProps) {
   const [usuarioId, setUsuarioId] = useState<number | "">("");
-  const [clienteId, setClienteId] = useState<number | "">("");
+  const [proveedorId, setProveedorId] = useState<number | "">("");
   const [productos, setProductos] = useState<
     {
       productoId: number;
@@ -45,54 +47,32 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
     }[]
   >([{ productoId: 0, cantidad: 1 }]);
   const [users, setUsers] = useState<any[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
+  const [proveedores, setProveedores] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
-  const [ivas, setIvas] = useState<any[]>([]);
-  const [selectedIva, setSelectedIva] = useState<number>(0);
   const [openModal, setOpenModal] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState<
     number | null
   >(null);
   const [total, setTotal] = useState(0);
 
-  const [newClient, setNewClient] = useState({
-    identificacion: "",
-    nombre: "",
-    direccion: "",
-    telefono: "",
-    email: "",
-  });
-
-  // Cargar datos iniciales (usuarios, clientes y productos)
+  // Cargar datos iniciales (usuarios, proveedores y productos)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersResponse, clientsResponse, productsResponse, ivasResponse] =
-          await Promise.all([
-            fetch("http://localhost:3000/api/users"),
-            fetch("http://localhost:3000/api/clients"),
-            fetch("http://localhost:3000/api/products"),
-            fetch("http://localhost:3000/api/iva"),
-          ]);
+        const [usersResponse, proveedoresResponse] = await Promise.all([
+          fetch("http://localhost:3000/api/users"),
+          fetch("http://localhost:3000/api/suppliers"),
+        ]);
 
-        if (
-          !usersResponse.ok ||
-          !clientsResponse.ok ||
-          !productsResponse.ok ||
-          !ivasResponse.ok
-        ) {
+        if (!usersResponse.ok || !proveedoresResponse.ok) {
           throw new Error("Error al cargar los datos iniciales");
         }
 
         const usersData = await usersResponse.json();
-        const clientsData = await clientsResponse.json();
-        const productsData = await productsResponse.json();
-        const ivasData = await ivasResponse.json();
+        const proveedoresData = await proveedoresResponse.json();
 
         setUsers(usersData);
-        setClients(clientsData);
-        setProducts(productsData);
-        setIvas(ivasData);
+        setProveedores(proveedoresData);
       } catch (error) {
         console.error(error);
         toast.error("Error al cargar los datos iniciales");
@@ -100,9 +80,36 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
     };
 
     fetchData();
-  }, []);
+  }, []); // Se ejecuta solo al montar el componente
 
-  // Calcular el total de la venta con IVA
+  useEffect(() => {
+    const fetchProductsBySupplier = async () => {
+      if (!proveedorId) {
+        setProducts([]); // Limpiar productos si no hay proveedor seleccionado
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/products/bySupplier/${proveedorId}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Error al cargar productos del proveedor.");
+        }
+
+        const productsData = await response.json();
+        setProducts(productsData); // Solo cargamos los productos de ese proveedor
+      } catch (error) {
+        console.error(error);
+        toast.error("No se pudieron cargar los productos del proveedor.");
+      }
+    };
+
+    fetchProductsBySupplier();
+  }, [proveedorId]); // Se ejecuta cada vez que `proveedorId` cambie
+
+  // Calcular el total del pedido
   useEffect(() => {
     let newTotal = 0;
 
@@ -112,17 +119,14 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       );
 
       if (selectedProduct) {
-        const precio = Number(selectedProduct.precio_venta) || 0;
+        const precio = Number(selectedProduct.precio_compra) || 0;
         const cantidad = Number(producto.cantidad) || 0;
         newTotal += precio * cantidad;
       }
     });
 
-    const iva = selectedIva / 100;
-    const totalConIva = newTotal * (1 + iva);
-
-    setTotal(parseFloat(totalConIva.toFixed(2)));
-  }, [productos, products, selectedIva]);
+    setTotal(parseFloat(newTotal.toFixed(2)));
+  }, [productos, products]);
 
   // Agregar un nuevo producto
   const handleAddProduct = () => {
@@ -143,52 +147,13 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       const selectedProduct = products.find((p) => p.producto_id === value);
       if (selectedProduct) {
         newProductos[index].descripcion = selectedProduct.nombre;
-        newProductos[index].valor = selectedProduct.precio_venta;
+        newProductos[index].valor = selectedProduct.precio_compra;
       }
     }
 
     setProductos(newProductos);
   };
 
-  // Crear un nuevo cliente
-  const handleCreateClient = async () => {
-    if (!newClient.identificacion || !newClient.nombre) {
-      toast.error("Todos los campos del cliente son obligatorios.");
-      return null;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3000/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newClient),
-      });
-
-      if (!response.ok) throw new Error("Error al crear el cliente");
-
-      const result = await response.json();
-      return result.clientId;
-    } catch (error) {
-      toast.error("No se pudo crear el cliente.");
-      return null;
-    }
-  };
-
-  // Verificar si un cliente ya existe
-  const checkIfClientExists = async (identificacion: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:3000/api/clients/identificacion/${identificacion}`
-      );
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      return data?.cliente_id ?? null;
-    } catch {
-      return null;
-    }
-  };
   const handleOpenModal = (index: number) => {
     setSelectedProductIndex(index);
     setOpenModal(true);
@@ -205,36 +170,18 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       handleCloseModal();
     }
   };
+
   // Manejar el envío del formulario
   const handleSubmit = async () => {
     try {
-      let clienteIdFinal = clienteId;
-
-      // Verificar si el cliente ya existe o crear uno nuevo
-      if (!clienteIdFinal && newClient.identificacion) {
-        const clienteExistenteId = await checkIfClientExists(
-          newClient.identificacion
-        );
-
-        if (clienteExistenteId) {
-          clienteIdFinal = clienteExistenteId;
-        } else {
-          const clienteIdCreado = await handleCreateClient();
-          if (!clienteIdCreado) return;
-          clienteIdFinal = clienteIdCreado;
-        }
-
-        setClienteId(clienteIdFinal);
-      }
-
       // Obtener el userId desde el token
       const usuarioId = getUserIdFromToken();
       console.log("usuarioId:", usuarioId); // Depuración
-      console.log("clienteIdFinal:", clienteIdFinal); // Depuración
+      console.log("proveedorId:", proveedorId); // Depuración
       console.log("total:", total); // Depuración
 
       // Validar campos obligatorios
-      if (!usuarioId || !clienteIdFinal) {
+      if (!usuarioId || !proveedorId) {
         toast.error("Todos los campos son obligatorios.");
         return;
       }
@@ -251,122 +198,88 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         return;
       }
 
-      // Crear la venta
-      const ventaResponse = await fetch("http://localhost:3000/api/sales", {
+      // Construir la estructura del pedido con los detalles incluidos
+      const pedidoData = {
+        usuarioId: Number(usuarioId),
+        proveedorId: Number(proveedorId),
+        total: total,
+        detalles: productos.map((producto) => ({
+          productoId: producto.productoId,
+          cantidad: producto.cantidad,
+          precioUnitario: producto.valor,
+          subtotal: producto.valor * producto.cantidad,
+        })),
+      };
+
+      console.log("Datos del pedido enviados:", pedidoData); // Depuración
+
+      // Enviar el pedido con sus detalles en una sola solicitud
+      const response = await fetch("http://localhost:3000/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          usuarioId: Number(usuarioId),
-          clienteId: Number(clienteIdFinal),
-          total: total,
-        }),
+        body: JSON.stringify(pedidoData),
       });
 
-      if (!ventaResponse.ok) {
-        const errorData = await ventaResponse.json();
-        console.error("Error al crear la venta:", errorData); // Depuración
-        throw new Error(errorData.message || "Error al crear la venta");
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error al crear el pedido:", errorData); // Depuración
+        throw new Error(errorData.message || "Error al crear el pedido");
       }
 
-      const ventaResult = await ventaResponse.json();
-      const ventaId = ventaResult.sale.venta_id;
-
-      // Crear los detalles de la venta
-      for (const producto of productos) {
-        const detalleResponse = await fetch(
-          "http://localhost:3000/api/salesDetails",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({
-              ventaId: ventaId,
-              productoId: producto.productoId,
-              cantidadProductos: producto.cantidad,
-            }),
-          }
-        );
-
-        if (!detalleResponse.ok) {
-          const errorData = await detalleResponse.json();
-          throw new Error(
-            errorData.message || "Error al crear el detalle de la venta"
-          );
-        }
-      }
-
-      toast.success("Venta y detalles creados exitosamente.");
+      // Pedido creado exitosamente
+      toast.success("Pedido y detalles creados exitosamente.");
 
       // Limpiar el formulario
-      if (onSaleCreated) {
-        onSaleCreated();
+      if (onOrderCreated) {
+        onOrderCreated();
       }
 
       setUsuarioId("");
-      setClienteId("");
+      setProveedorId("");
       setProductos([{ productoId: 0, cantidad: 1 }]);
-      setNewClient({
-        identificacion: "",
-        nombre: "",
-        direccion: "",
-        telefono: "",
-        email: "",
-      });
     } catch (error) {
       console.error("Error en handleSubmit:", error); // Depuración
-      toast.error(error.message || "No se pudo crear la venta o los detalles.");
+      toast.error(
+        error.message || "No se pudo crear el pedido o los detalles."
+      );
     }
   };
 
   return (
     <Box sx={{ padding: 1 }}>
-      {/* Contenedor Cliente */}
+      {/* Contenedor Proveedor */}
       <Box sx={{ padding: 1.5, borderRadius: 1, mb: 2 }}>
-        <Typography level="h5" sx={{ mb: 1, fontSize: "1rem" }}>
-          Datos del titular
-        </Typography>
         <Grid container spacing={3}>
-          {[
-            { label: "Identificación *", key: "identificacion" },
-            { label: "Nombre Completo *", key: "nombre" },
-            { label: "Dirección", key: "direccion" },
-            { label: "Teléfono *", key: "telefono" },
-          ].map(({ label, key }) => (
-            <Grid item xs={12} sm={6} md={3} key={key}>
-              <FormControl fullWidth>
-                <FormLabel sx={{ fontSize: "0.875rem" }}>{label}</FormLabel>
-                <Input
-                  size="sm"
-                  value={newClient[key]}
-                  onChange={(e) =>
-                    setNewClient({ ...newClient, [key]: e.target.value })
-                  }
-                />
-              </FormControl>
-            </Grid>
-          ))}
-
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
-              <FormLabel sx={{ fontSize: "0.875rem" }}>Correo</FormLabel>
-              <Input
-                size="sm"
-                value={newClient.email}
-                onChange={(e) =>
-                  setNewClient({ ...newClient, email: e.target.value })
-                }
-              />
+              <FormLabel sx={{ fontSize: "0.875rem" }}>Proveedor *</FormLabel>
+              <Select
+                value={proveedorId || ""}
+                onChange={(event, newValue) => {
+                  if (newValue !== null && newValue !== undefined) {
+                    setProveedorId(Number(newValue)); // Se actualizará y cargará los productos
+                  }
+                }}
+                sx={{ minHeight: "40px" }}
+              >
+                {proveedores.map((proveedor) => (
+                  <Option
+                    key={proveedor.proveedor_id}
+                    value={proveedor.proveedor_id}
+                  >
+                    {proveedor.nombre}
+                  </Option>
+                ))}
+              </Select>
             </FormControl>
           </Grid>
         </Grid>
       </Box>
 
-      {/* Contenedor Venta y Productos */}
+      {/* Contenedor Pedido y Productos */}
       <Box
         sx={{
           padding: 1.5,
@@ -379,17 +292,11 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
           level="h5"
           sx={{ mb: 1, fontSize: "1rem", marginBottom: "0" }}
         >
-          Detalle de la Venta
+          Detalle del Pedido
         </Typography>
 
         {/* Tabla de productos */}
-        <Box
-          sx={{
-            maxHeight: 200,
-            overflowY: "auto",
-            padding: 1,
-          }}
-        >
+        <Box sx={{ maxHeight: 200, overflowY: "auto", padding: 1 }}>
           <Table sx={{ mt: 2, overflowY: "auto" }}>
             <thead>
               <tr>
@@ -407,8 +314,9 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                 const selectedProduct = products.find(
                   (p) => p.producto_id === producto.productoId
                 );
+
                 const precioUnitario = selectedProduct
-                  ? selectedProduct.precio_venta
+                  ? selectedProduct.precio_compra
                   : 0;
                 const subtotal = precioUnitario * producto.cantidad;
 
@@ -417,24 +325,24 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                     <td>
                       <Button
                         size="sm"
-                        variant="plain" // Hace que el botón no tenga relleno de color
+                        variant="plain"
                         sx={{
-                          minHeight: "30px", // Ajusta la altura mínima
-                          padding: "4px 8px", // Ajusta el relleno para que no se vea vacío
-                          border: "1px solid", // Opción: añade un borde si lo deseas
-                          display: "flex", // Para centrar el contenido correctamente
+                          minHeight: "30px",
+                          padding: "4px 8px",
+                          border: "1px solid",
+                          display: "flex",
                           alignItems: "center",
-                          gap: "4px", // Espaciado entre el icono y el texto
+                          gap: "4px",
                         }}
                         onClick={() => handleOpenModal(index)}
-                        startDecorator={!selectedProduct && <SearchIcon />} // Usa startDecorator correctamente
+                        startDecorator={!selectedProduct && <SearchIcon />}
                       >
                         {selectedProduct
                           ? selectedProduct.nombre
                           : "Seleccionar"}
                       </Button>
                     </td>
-                    <td>{selectedProduct?.marca_nombre || "-"}</td>
+                    <td>{selectedProduct?.marca_id || "-"}</td>
                     <td>{selectedProduct?.modelo_nombre || "-"}</td>
                     <td>
                       <Input
@@ -468,41 +376,9 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
           </Button>
         </Box>
 
-        {/* Tabla de IVA, Total y Guardar Venta */}
+        {/* Tabla de Total y Guardar Pedido */}
         <Table sx={{ mt: 1, width: "100%", fontSize: "0.8rem" }}>
           <tbody>
-            {/* Fila del IVA */}
-            <tr style={{ height: "28px" }}>
-              <td style={{ width: "50%" }}>
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <FormControl sx={{ minWidth: "100px" }}>
-                    <FormLabel sx={{ fontSize: "0.75rem" }}>IVA</FormLabel>
-                    <Select
-                      name="iva"
-                      value={selectedIva || ""}
-                      onChange={(event, newValue) => {
-                        if (newValue !== null && newValue !== undefined) {
-                          setSelectedIva(Number(newValue));
-                        }
-                      }}
-                      sx={{
-                        minHeight: "26px",
-                        fontSize: "1 rem",
-                        padding: "2px 6px",
-                        minWidth: "200px",
-                      }}
-                    >
-                      {ivas.map((iva) => (
-                        <Option key={iva.iva_id} value={iva.porcentaje}>
-                          {iva.porcentaje}%
-                        </Option>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Box>
-              </td>
-            </tr>
-
             {/* Fila del Total */}
             <tr style={{ height: "28px" }}>
               <td style={{ width: "50%", borderTop: 0 }}>
@@ -526,7 +402,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
               </td>
             </tr>
 
-            {/* Fila con el Botón de Guardar Venta */}
+            {/* Fila con el Botón de Guardar Pedido */}
             <tr style={{ height: "28px" }}>
               <td style={{ width: "50%", borderTop: 0 }}>
                 <Box
@@ -547,7 +423,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                       },
                     }}
                   >
-                    Guardar Venta
+                    Guardar Pedido
                   </Button>
                 </Box>
               </td>

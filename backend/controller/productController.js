@@ -11,6 +11,21 @@ async function getAllProducts(req, res) {
   }
 }
 
+async function getProductsBySupplier(req, res) {
+  try {
+    const { proveedorId } = req.params;
+
+    if (!proveedorId) {
+      return res.status(400).json({ error: "El ID del proveedor es obligatorio." });
+    }
+
+    const products = await productModel.getProductsBySupplier(proveedorId);
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}
+
 // Crear un nuevo producto
 async function createProduct(req, res) {
   const {
@@ -135,4 +150,4 @@ async function deleteProduct(req, res) {
   }
 }
 
-module.exports = { getAllProducts, createProduct, getProductById, updateProduct, deleteProduct };
+module.exports = { getAllProducts, createProduct, getProductById, updateProduct, deleteProduct,getProductsBySupplier };

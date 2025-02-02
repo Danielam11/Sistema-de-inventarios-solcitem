@@ -959,9 +959,6 @@ export default function SalesTable() {
                           ...
                         </MenuButton>
                         <Menu>
-                          <MenuItem onClick={() => handleEditClick(sale)}>
-                            Editar
-                          </MenuItem>
                           <MenuItem
                             color="danger"
                             onClick={() => handleDelete(sale.venta_id)}
@@ -1007,32 +1004,28 @@ export default function SalesTable() {
               );
             })}
           </tbody>
+          <tfoot>
+            <tr>
+              <td
+                colSpan={6}
+                style={{
+                  textAlign: "right",
+                  fontWeight: "bold",
+                }}
+              >
+                Total:
+              </td>
+              <td
+                style={{
+                  fontWeight: "bold",
+                }}
+              >
+                ${totalSum.toFixed(2)}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
         </Table>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 0,
-            padding: 1,
-            borderTop: "2px solid #1976d2",
-
-            width: "100%",
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", textAlign: "right", marginLeft: 7 }}
-          >
-            Total
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{ fontWeight: "bold", textAlign: "right", marginRight: 19 }}
-          >
-            {totalSum.toFixed(2)}
-          </Typography>
-        </Box>
       </Sheet>
 
       <ToastContainer />

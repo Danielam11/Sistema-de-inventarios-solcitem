@@ -1,85 +1,130 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import Box from '@mui/joy/Box';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import Input from '@mui/joy/Input';
-import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
-import Dropdown from '@mui/joy/Dropdown';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import IconButton from '@mui/joy/IconButton';
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import * as React from "react";
+import { useEffect, useState } from "react";
+import Box from "@mui/joy/Box";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import Input from "@mui/joy/Input";
+import Table from "@mui/joy/Table";
+import Sheet from "@mui/joy/Sheet";
+import Dropdown from "@mui/joy/Dropdown";
+import Menu from "@mui/joy/Menu";
+import MenuButton from "@mui/joy/MenuButton";
+import MenuItem from "@mui/joy/MenuItem";
+import IconButton from "@mui/joy/IconButton";
+import SearchIcon from "@mui/icons-material/Search";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function fetchPedidos(setPedidos: (data: any[]) => void) {
-  fetch('http://localhost:3000/api/orders')
+  fetch("http://localhost:3000/api/orders")
     .then((response) => response.json())
     .then((data) => {
-      console.log(data);
-      // Procesar los datos si es necesario
       setPedidos(data);
     })
-    .catch((error) => console.error('Error fetching orders:', error));
+    .catch((error) => console.error("Error fetching orders:", error));
+}
+
+// Función para obtener un pedido con sus detalles
+function fetchOrderById(orderId: number, setOrderDetails: (data: any) => void) {
+  fetch(`http://localhost:3000/api/orders/${orderId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      setOrderDetails(data);
+    })
+    .catch((error) => console.error("Error fetching order details:", error));
 }
 
 export default function OrderTable() {
-  const [pedidos, setPedidos] = useState<any[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [pedidosOriginales, setPedidosOriginales] = useState<any[]>([]);
+  const [pedidosFiltrados, setPedidosFiltrados] = useState<any[]>([]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [orderDetails, setOrderDetails] = useState<any>(null);
 
   useEffect(() => {
-    fetchPedidos(setPedidos);
+    fetchPedidos((data) => {
+      setPedidosOriginales(data);
+      setPedidosFiltrados(data);
+    });
   }, []);
 
-  const handleDelete = (pedidoId: number) => {
-    fetch(`http://localhost:3000/api/orders/${pedidoId}`, {
-      method: 'DELETE',
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Error al eliminar el pedido');
-        }
-        setPedidos((prev) => prev.filter((pedido) => pedido.pedido_id !== pedidoId));
-        toast.success('Pedido eliminado exitosamente.');
-      })
-      .catch((error) => {
-        console.error('Error al eliminar pedido:', error);
-        toast.error('No se pudo eliminar el pedido.');
-      });
-  };
+  // Filtrado de pedidos por fecha
+  useEffect(() => {
+    if (!fromDate || !toDate) {
+      setPedidosFiltrados(pedidosOriginales);
+      return;
+    }
 
-  const filteredPedidos = pedidos.filter(
-    (pedido) =>
-      pedido.fecha_pedido.includes(searchTerm) ||
-      pedido.proveedor_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pedido.usuario_email?.toLowerCase().includes(searchTerm.toLowerCase())
+    const fromDateTime = new Date(fromDate);
+    const toDateTime = new Date(toDate);
+    toDateTime.setHours(23, 59, 59, 999);
+
+    const filtered = pedidosOriginales.filter((pedido) => {
+      const orderDate = new Date(pedido.fecha_pedido);
+      return orderDate >= fromDateTime && orderDate <= toDateTime;
+    });
+
+    setPedidosFiltrados(filtered);
+  }, [fromDate, toDate, pedidosOriginales]);
+
+  // Calcular el total de los pedidos filtrados
+  const totalPedidosFiltrados = pedidosFiltrados.reduce(
+    (sum, pedido) => sum + parseFloat(pedido.total || 0),
+    0
   );
+
+  const handleExpand = (orderId: number) => {
+    if (expandedRow === orderId) {
+      setExpandedRow(null);
+      setOrderDetails(null);
+    } else {
+      setExpandedRow(orderId);
+      fetchOrderById(orderId, setOrderDetails);
+    }
+  };
 
   const formatFecha = (fecha: string) => {
     const date = new Date(fecha);
-    return date.toLocaleDateString();
+    const dia = String(date.getDate()).padStart(2, "0");
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const anio = date.getFullYear();
+    const horas = String(date.getHours()).padStart(2, "0");
+    const minutos = String(date.getMinutes()).padStart(2, "0");
+    const segundos = String(date.getSeconds()).padStart(2, "0");
+
+    return `${dia}/${mes}/${anio}, ${horas}:${minutos}:${segundos}`;
   };
 
   return (
     <React.Fragment>
-      <Box sx={{ display: 'flex', gap: 1.5, padding: 2 }}>
+      <Box sx={{ display: "flex", gap: 1.5, padding: 2 }}>
         <FormControl sx={{ flex: 1 }}>
-          <FormLabel>Buscar Pedidos</FormLabel>
+          <FormLabel>Desde*</FormLabel>
           <Input
-            placeholder="Buscar por fecha, proveedor o email"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </FormControl>
+        <FormControl sx={{ flex: 1 }}>
+          <FormLabel>Hasta*</FormLabel>
+          <Input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
           />
         </FormControl>
       </Box>
 
-      <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
+      <Sheet sx={{ width: "100%", overflow: "auto", borderRadius: "sm" }}>
         <Table stickyHeader>
           <thead>
             <tr>
+              <th></th>
               <th>Fecha</th>
               <th>Proveedor</th>
               <th>Email Usuario</th>
@@ -88,33 +133,82 @@ export default function OrderTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredPedidos.map((pedido) => (
-              <tr key={pedido.pedido_id}>
-                <td>{formatFecha(pedido.fecha_pedido)}</td>
-                <td>{pedido.proveedor_nombre}</td>
-                <td>{pedido.usuario_email}</td>
-                <td>{pedido.total}</td>
-                <td>
-                  <Dropdown>
-                    <MenuButton
-                      slots={{ root: IconButton }}
-                      slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
-                    >
-                      <MoreHorizRoundedIcon />
-                    </MenuButton>
-                    <Menu>
-                      <MenuItem
-                        color="danger"
-                        onClick={() => handleDelete(pedido.pedido_id)}
+            {pedidosFiltrados.map((pedido) => (
+              <React.Fragment key={pedido.pedido_id}>
+                <tr>
+                  <td>
+                    <IconButton onClick={() => handleExpand(pedido.pedido_id)}>
+                      {expandedRow === pedido.pedido_id ? (
+                        <KeyboardArrowUpIcon />
+                      ) : (
+                        <KeyboardArrowDownIcon />
+                      )}
+                    </IconButton>
+                  </td>
+                  <td>{formatFecha(pedido.fecha_pedido)}</td>
+                  <td>{pedido.proveedor_nombre}</td>
+                  <td>{pedido.usuario_email}</td>
+                  <td>${parseFloat(pedido.total).toFixed(2)}</td>
+                  <td>
+                    <Dropdown>
+                      <MenuButton
+                        slots={{ root: IconButton }}
+                        slotProps={{
+                          root: { variant: "plain", color: "neutral" },
+                        }}
                       >
-                        Eliminar
-                      </MenuItem>
-                    </Menu>
-                  </Dropdown>
-                </td>
-              </tr>
+                        <MoreHorizRoundedIcon />
+                      </MenuButton>
+                      <Menu>
+                        <MenuItem color="danger">Eliminar</MenuItem>
+                      </Menu>
+                    </Dropdown>
+                  </td>
+                </tr>
+
+                {expandedRow === pedido.pedido_id && orderDetails && (
+                  <tr>
+                    <td colSpan={6}>
+                      <Table>
+                        <thead>
+                          <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                            <th>Subtotal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {orderDetails.detalles.map((detail: any) => (
+                            <tr key={detail.detalle_id}>
+                              <td>{detail.producto_nombre}</td>
+                              <td>{detail.cantidad}</td>
+                              <td>${detail.precio_unitario}</td>
+                              <td>${detail.subtotal}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
+          <tfoot>
+            <tr>
+              <td
+                colSpan={4}
+                style={{ textAlign: "right", fontWeight: "bold" }}
+              >
+                Total:
+              </td>
+              <td style={{ fontWeight: "bold" }}>
+                ${totalPedidosFiltrados.toFixed(2)}
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
         </Table>
       </Sheet>
 

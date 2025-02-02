@@ -240,18 +240,12 @@ export default function Sidebar() {
               <List sx={{ gap: 0.5, mb: 3 }}>
                 <ListItem sx={{ mb: 0 }}>
                   <ListItemButton component={Link} to="ventas">
-                    <ShoppingCartRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="title-sm">Ventas</Typography>
-                    </ListItemContent>
+                    Ventas
                   </ListItemButton>
                 </ListItem>
                 <ListItem sx={{ mb: 0 }}>
                   <ListItemButton component={Link} to="pedidos">
-                    <QuestionAnswerRoundedIcon />
-                    <ListItemContent>
-                      <Typography level="title-sm">Pedidos</Typography>
-                    </ListItemContent>
+                    Pedidos
                   </ListItemButton>
                 </ListItem>
               </List>
@@ -277,7 +271,6 @@ export default function Sidebar() {
               )}
             >
               <List sx={{ gap: 0.5, mb: 3 }}>
-                <ListItem sx={{ mt: 0.5, mb: 0.5 }}></ListItem>
                 <ListItem sx={{ mb: 0 }}>
                   <ListItemButton component={Link} to="users">
                     Crear Nuevo Usuario
@@ -318,7 +311,13 @@ export default function Sidebar() {
           </Box>
 
           {/* Icono de Logout alineado a la derecha */}
-          <IconButton size="sm" variant="plain" color="neutral">
+          <IconButton
+            size="sm"
+            variant="plain"
+            color="neutral"
+            component={Link}
+            to="/"
+          >
             <LogoutRoundedIcon />
           </IconButton>
         </Box>

@@ -3,21 +3,14 @@ const orderModel = require("../model/orderModel");
 // Crear un nuevo pedido (order)
 async function createOrder(req, res) {
   try {
-    const { fechaPedido, proveedorId, usuarioId, total, subtotal, detalles } =
-      req.body;
-    const order = await orderModel.createOrder(
-      fechaPedido,
-      proveedorId,
-      usuarioId,
-      total,
-      subtotal,
-      detalles
-    );
+    const { proveedorId, usuarioId, total, detalles } = req.body;
+    const order = await orderModel.createOrder(proveedorId, usuarioId, total, detalles);
     res.status(201).json(order);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
+
 
 // Obtener todos los pedidos (orders)
 async function getAllOrders(req, res) {
@@ -40,6 +33,7 @@ async function getOrderById(req, res) {
   }
 }
 
+
 // Eliminar un pedido (order)
 async function deleteOrder(req, res) {
   try {
@@ -55,34 +49,14 @@ async function deleteOrder(req, res) {
 async function updateOrder(req, res) {
   try {
     const { id } = req.params;
-    const { fechaPedido, proveedorId, usuarioId, total, subtotal } = req.body;
-    const updatedOrder = await orderModel.updateOrder(
-      id,
-      fechaPedido,
-      proveedorId,
-      usuarioId,
-      total,
-      subtotal
-    );
+    const { proveedorId, usuarioId, total, detalles } = req.body;
+    const updatedOrder = await orderModel.updateOrder(id, proveedorId, usuarioId, total, detalles);
     res.status(200).json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 }
 
-// Actualizar los detalles de un pedido (order details)
-async function updateOrderDetails(req, res) {
-  try {
-    const { id } = req.params;
-    const { detalles } = req.body;
-    await orderModel.updateOrderDetails(id, detalles);
-    res.status(200).json({
-      message: "Detalles del pedido (order details) actualizados correctamente",
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
 
 module.exports = {
   createOrder,
@@ -90,5 +64,4 @@ module.exports = {
   getOrderById,
   deleteOrder,
   updateOrder,
-  updateOrderDetails,
 };

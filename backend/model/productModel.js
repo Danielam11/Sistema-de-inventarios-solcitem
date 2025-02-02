@@ -16,6 +16,36 @@ function getAllProducts() {
   return pool.query(query).then((result) => result.rows);
 }
 
+async function getProductsBySupplier(proveedorId) {
+  try {
+    const query = `
+      SELECT 
+        p.producto_id, 
+        p.nombre, 
+        p.descripcion, 
+        p.precio_compra, 
+        p.precio_venta, 
+        p.cantidad, 
+        p.marca_id, 
+        m.nombre AS marca_nombre, 
+        p.categoria_id, 
+        c.nombre AS categoria_nombre, 
+        p.modelo_id, 
+        mo.nombre AS modelo_nombre
+      FROM Productos p
+      INNER JOIN producto_proveedor pp ON p.producto_id = pp.producto_id
+      LEFT JOIN Marcas m ON p.marca_id = m.marca_id
+      LEFT JOIN Categorias c ON p.categoria_id = c.categoria_id
+      LEFT JOIN Modelos mo ON p.modelo_id = mo.modelo_id
+      WHERE pp.proveedor_id = $1`;
+
+    const result = await pool.query(query, [proveedorId]);
+    return result.rows;
+  } catch (error) {
+    throw new Error("Error al obtener productos del proveedor: " + error.message);
+  }
+}
+
 // Crear un nuevo producto y asociarlo con proveedores
 async function createProduct(
   nombre,
@@ -170,4 +200,5 @@ module.exports = {
   getProductById,
   updateProduct,
   deleteProduct,
+  getProductsBySupplier
 };

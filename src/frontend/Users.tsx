@@ -1,26 +1,26 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
-import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Checkbox from '@mui/joy/Checkbox';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import Input from '@mui/joy/Input';
-import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
-import IconButton from '@mui/joy/IconButton';
-import Typography from '@mui/joy/Typography';
-import SearchIcon from '@mui/icons-material/Search';
-import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
-import { toast } from 'react-toastify';
+import * as React from "react";
+import { useEffect, useState } from "react";
+import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
+import Checkbox from "@mui/joy/Checkbox";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import Input from "@mui/joy/Input";
+import Table from "@mui/joy/Table";
+import Sheet from "@mui/joy/Sheet";
+import Menu from "@mui/joy/Menu";
+import MenuButton from "@mui/joy/MenuButton";
+import MenuItem from "@mui/joy/MenuItem";
+import Dropdown from "@mui/joy/Dropdown";
+import IconButton from "@mui/joy/IconButton";
+import Typography from "@mui/joy/Typography";
+import SearchIcon from "@mui/icons-material/Search";
+import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
+import Modal from "@mui/joy/Modal";
+import ModalDialog from "@mui/joy/ModalDialog";
+import { toast } from "react-toastify";
 
 interface UsersProps {
   isCreateModalOpen: boolean;
@@ -28,30 +28,36 @@ interface UsersProps {
 }
 
 function fetchUsuarios(setUsuarios: (data: any[]) => void) {
-  fetch('http://localhost:3000/api/users')
+  fetch("http://localhost:3000/api/users")
     .then((response) => response.json())
     .then((data) => {
-      console.log('Datos de usuarios (raw):', data);
+      console.log("Datos de usuarios (raw):", data);
       const validUsuarios = (data || []).filter(
-        (usuario: { usuario_id: any; email: any; rol: any; }) => usuario && usuario.usuario_id && usuario.email && usuario.rol
+        (usuario: { usuario_id: any; email: any; rol: any }) =>
+          usuario && usuario.usuario_id && usuario.email && usuario.rol
       );
-      console.log('Usuarios válidos:', validUsuarios);
+      console.log("Usuarios válidos:", validUsuarios);
       setUsuarios(validUsuarios);
     })
-    .catch((error) => console.error('Error fetching usuarios:', error));
+    .catch((error) => console.error("Error fetching usuarios:", error));
 }
 
-function updateUsuario(usuarioId: string, usuarioData: { email: string; contrasena: string; rol: string; }, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => void) | null | undefined) {
+function updateUsuario(
+  usuarioId: string,
+  usuarioData: { email: string; contrasena: string; rol: string },
+  onSuccess: ((value: any) => any) | null | undefined,
+  onError: ((reason: any) => void) | null | undefined
+) {
   fetch(`http://localhost:3000/api/users/${usuarioId}`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(usuarioData),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al actualizar el usuario');
+        throw new Error("Error al actualizar el usuario");
       }
       return response.json();
     })
@@ -59,13 +65,17 @@ function updateUsuario(usuarioId: string, usuarioData: { email: string; contrase
     .catch(onError);
 }
 
-function deleteUsuario(usuarioId: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
+function deleteUsuario(
+  usuarioId: any,
+  onSuccess: ((value: any) => any) | null | undefined,
+  onError: ((reason: any) => PromiseLike<never>) | null | undefined
+) {
   fetch(`http://localhost:3000/api/users/${usuarioId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al eliminar el usuario');
+        throw new Error("Error al eliminar el usuario");
       }
       return response.json();
     })
@@ -73,17 +83,21 @@ function deleteUsuario(usuarioId: any, onSuccess: ((value: any) => any) | null |
     .catch(onError);
 }
 
-async function createClient(clienteData: any, onSuccess: ((value: any) => any) | null | undefined, onError: ((reason: any) => PromiseLike<never>) | null | undefined) {
-  fetch('http://localhost:3000/api/clients', {
-    method: 'POST',
+async function createClient(
+  clienteData: any,
+  onSuccess: ((value: any) => any) | null | undefined,
+  onError: ((reason: any) => PromiseLike<never>) | null | undefined
+) {
+  fetch("http://localhost:3000/api/clients", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(clienteData),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error('Error al crear el cliente');
+        throw new Error("Error al crear el cliente");
       }
       return response.json();
     })
@@ -93,7 +107,7 @@ async function createClient(clienteData: any, onSuccess: ((value: any) => any) |
 
 function notifySuccess(message: string) {
   toast.success(message, {
-    position: 'top-right',
+    position: "top-right",
     autoClose: 2000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -104,7 +118,7 @@ function notifySuccess(message: string) {
 
 function notifyError(message: string) {
   toast.error(message, {
-    position: 'top-right',
+    position: "top-right",
     autoClose: 2000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -113,50 +127,64 @@ function notifyError(message: string) {
   });
 }
 
-export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: UsersProps) {
-  const [usuarios, setUsuarios] = useState<{ usuario_id: string; email: string; contrasena?: string; rol: string; }[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+export default function Users({
+  isCreateModalOpen,
+  setIsCreateModalOpen,
+}: UsersProps) {
+  const [usuarios, setUsuarios] = useState<
+    { usuario_id: string; email: string; contrasena?: string; rol: string }[]
+  >([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-  const [editingUsuario, setEditingUsuario] = useState({ usuario_id: '', email: '', contrasena: '', rol: '' });
+  const [editingUsuario, setEditingUsuario] = useState({
+    usuario_id: "",
+    email: "",
+    contrasena: "",
+    rol: "",
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newUsuario, setNewUsuario] = useState({
-    email: '',
-    password: '', // Cambiar contrasena por password
-    rol: '',
+    email: "",
+    password: "", // Cambiar contrasena por password
+    rol: "",
   });
 
   useEffect(() => {
     fetchUsuarios(setUsuarios);
   }, []);
 
-
   const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewUsuario((prev) => ({ ...prev, [name]: value }));
   };
-  
-  const handleEditClick = (usuario: { usuario_id: any; email: any; contrasena?: any; rol: any; }) => {
+
+  const handleEditClick = (usuario: {
+    usuario_id: any;
+    email: any;
+    contrasena?: any;
+    rol: any;
+  }) => {
     if (!usuario) {
-      console.warn('Usuario no válido para editar:', usuario);
+      console.warn("Usuario no válido para editar:", usuario);
       return;
     }
     setEditingUsuario({
-      usuario_id: usuario.usuario_id || '',
-      email: usuario.email || '',
-      contrasena: usuario.contrasena || '',
-      rol: usuario.rol || '',
+      usuario_id: usuario.usuario_id || "",
+      email: usuario.email || "",
+      contrasena: usuario.contrasena || "",
+      rol: usuario.rol || "",
     });
     setIsModalOpen(true);
   };
 
   const handleModalClose = () => {
-    setEditingUsuario({ usuario_id: '', email: '', contrasena: '', rol: '' });
+    setEditingUsuario({ usuario_id: "", email: "", contrasena: "", rol: "" });
     setIsModalOpen(false);
   };
 
   const handleSave = () => {
     if (!editingUsuario || !editingUsuario.usuario_id) {
-      console.warn('Usuario inválido para guardar:', editingUsuario);
+      console.warn("Usuario inválido para guardar:", editingUsuario);
       return;
     }
 
@@ -166,7 +194,7 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
       usuario_id,
       usuarioData,
       (updatedUsuario) => {
-        console.log('Usuario actualizado:', updatedUsuario);
+        console.log("Usuario actualizado:", updatedUsuario);
         setUsuarios((prevUsuarios) =>
           prevUsuarios.map((usuario) =>
             usuario.usuario_id === updatedUsuario.user.usuario_id
@@ -177,63 +205,63 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
         handleModalClose();
       },
       (error) => {
-        console.error('Error al actualizar el usuario:', error);
-        alert('No se pudo actualizar el usuario.');
+        console.error("Error al actualizar el usuario:", error);
+        alert("No se pudo actualizar el usuario.");
       }
     );
   };
 
   const handleCreateSave = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/users/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("http://localhost:3000/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newUsuario),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al crear el usuario');
+        throw new Error(errorData.error || "Error al crear el usuario");
       }
-  
+
       const { userId, message } = await response.json();
-  
+
       const createdUsuario = {
         usuario_id: userId,
         email: newUsuario.email,
         rol: newUsuario.rol,
       };
-  
+
       setUsuarios((prev) => [createdUsuario, ...prev]);
-      setSearchTerm(''); // Resetea el término de búsqueda
-      toast.success(message || 'Usuario creado exitosamente.');
+      setSearchTerm(""); // Resetea el término de búsqueda
+      toast.success(message || "Usuario creado exitosamente.");
       setIsCreateModalOpen(false); // Cierra el modal
     } catch (error) {
-      console.error('Error al crear el usuario:', error);
+      console.error("Error al crear el usuario:", error);
       if (error instanceof Error) {
-        toast.error(error.message || 'No se pudo crear el usuario.');
+        toast.error(error.message || "No se pudo crear el usuario.");
       } else {
-        toast.error('No se pudo crear el usuario.');
+        toast.error("No se pudo crear el usuario.");
       }
     }
   };
-  
-  
 
   const handleDelete = (usuarioId: string) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este usuario?")) {
       return;
     }
 
     deleteUsuario(
       usuarioId,
       () => {
-        console.log('Usuario eliminado:', usuarioId);
-        setUsuarios((prevUsuarios) => prevUsuarios.filter((usuario) => usuario.usuario_id !== usuarioId));
+        console.log("Usuario eliminado:", usuarioId);
+        setUsuarios((prevUsuarios) =>
+          prevUsuarios.filter((usuario) => usuario.usuario_id !== usuarioId)
+        );
       },
       (error) => {
-        console.error('Error al eliminar el usuario:', error);
-        alert('No se pudo eliminar el usuario.');
+        console.error("Error al eliminar el usuario:", error);
+        alert("No se pudo eliminar el usuario.");
         return Promise.reject(error);
       }
     );
@@ -250,7 +278,7 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
 
   return (
     <React.Fragment>
-      <Box sx={{ display: 'flex', gap: 1.5, padding: 2 }}>
+      <Box sx={{ display: "flex", gap: 1.5, padding: 2 }}>
         <FormControl sx={{ flex: 1 }}>
           <FormLabel>Buscar Usuarios</FormLabel>
           <Input
@@ -262,68 +290,45 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
         </FormControl>
       </Box>
 
-      <Sheet sx={{ width: '100%', overflow: 'auto', borderRadius: 'sm' }}>
+      <Sheet sx={{ width: "100%", overflow: "auto", borderRadius: "sm" }}>
         <Table stickyHeader>
           <thead>
             <tr>
-              <th style={{ width: 48, textAlign: 'center' }}>
-                <Checkbox
-                  size="sm"
-                  indeterminate={
-                    selected.length > 0 && selected.length !== filteredUsuarios.length
-                  }
-                  checked={selected.length === filteredUsuarios.length}
-                  onChange={(e) =>
-                    setSelected(
-                      e.target.checked
-                        ? filteredUsuarios.map((u) => u.usuario_id)
-                        : []
-                    )
-                  }
-                />
-              </th>
+              <th style={{ width: 48, textAlign: "center" }}></th>
               <th style={{ width: 90 }}>Usuario ID</th>
               <th style={{ width: 150 }}>Email</th>
               <th style={{ width: 150 }}>Rol</th>
-              <th style={{ width: 100, textAlign: 'center' }}>Acciones</th>
+              <th style={{ width: 100, textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsuarios.length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center' }}>
+                <td colSpan={5} style={{ textAlign: "center" }}>
                   No se encontraron usuarios
                 </td>
               </tr>
             ) : (
               filteredUsuarios.map((usuario) => (
                 <tr key={usuario.usuario_id}>
-                  <td style={{ textAlign: 'center' }}>
-                    <Checkbox
-                      size="sm"
-                      checked={selected.includes(usuario.usuario_id)}
-                      onChange={(e) => {
-                        setSelected((ids) =>
-                          e.target.checked
-                            ? ids.concat(usuario.usuario_id)
-                            : ids.filter((id) => id !== usuario.usuario_id)
-                        );
-                      }}
-                    />
-                  </td>
+                  <td style={{ textAlign: "center" }}></td>
                   <td>{usuario.usuario_id}</td>
                   <td>{usuario.email}</td>
                   <td>{usuario.rol}</td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td style={{ textAlign: "center" }}>
                     <Dropdown>
                       <MenuButton
                         slots={{ root: IconButton }}
-                        slotProps={{ root: { variant: 'plain', color: 'neutral' } }}
+                        slotProps={{
+                          root: { variant: "plain", color: "neutral" },
+                        }}
                       >
                         <MoreHorizRoundedIcon />
                       </MenuButton>
                       <Menu>
-                        <MenuItem onClick={() => handleEditClick(usuario)}>Editar</MenuItem>
+                        <MenuItem onClick={() => handleEditClick(usuario)}>
+                          Editar
+                        </MenuItem>
                         <MenuItem
                           color="danger"
                           onClick={() => handleDelete(usuario.usuario_id)}
@@ -340,47 +345,52 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
         </Table>
       </Sheet>
 
-      <Modal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)}>
-  <ModalDialog>
-    <Typography component="h2">Añadir Nuevo Usuario</Typography>
-    <Box sx={{ mt: 2 }}>
-      <FormControl>
-        <FormLabel>Email</FormLabel>
-        <Input
-          name="email"
-          value={newUsuario.email}
-          onChange={handleCreateChange}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Contraseña</FormLabel>
-        <Input
-          name="password"
-          type="password"
-          value={newUsuario.password}
-          onChange={handleCreateChange}
-        />
-      </FormControl>
-      <FormControl>
-        <FormLabel>Rol</FormLabel>
-        <Input
-          name="rol"
-          value={newUsuario.rol}
-          onChange={handleCreateChange}
-        />
-      </FormControl>
-      <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-        <Button color="danger" onClick={() => setIsCreateModalOpen(false)}>
-          Cancelar
-        </Button>
-        <Button onClick={handleCreateSave}>
-          Guardar
-        </Button>
-      </Box>
-    </Box>
-  </ModalDialog>
-</Modal>
-
+      <Modal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      >
+        <ModalDialog>
+          <Typography component="h2">Añadir Nuevo Usuario</Typography>
+          <Box sx={{ mt: 2 }}>
+            <FormControl>
+              <FormLabel>Email</FormLabel>
+              <Input
+                name="email"
+                value={newUsuario.email}
+                onChange={handleCreateChange}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Contraseña</FormLabel>
+              <Input
+                name="password"
+                type="password"
+                value={newUsuario.password}
+                onChange={handleCreateChange}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Rol</FormLabel>
+              <Input
+                name="rol"
+                value={newUsuario.rol}
+                onChange={handleCreateChange}
+              />
+            </FormControl>
+            <Box
+              sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
+            >
+              <Button
+                color="danger"
+                onClick={() => setIsCreateModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateSave}>Guardar</Button>
+            </Box>
+          </Box>
+        </ModalDialog>
+      </Modal>
 
       <Modal open={isModalOpen} onClose={handleModalClose}>
         <ModalDialog>
@@ -392,16 +402,22 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
                 <Input
                   value={editingUsuario.email}
                   onChange={(e) =>
-                    setEditingUsuario({ ...editingUsuario, email: e.target.value })
+                    setEditingUsuario({
+                      ...editingUsuario,
+                      email: e.target.value,
+                    })
                   }
                 />
               </FormControl>
               <FormControl>
                 <FormLabel>Contraseña</FormLabel>
                 <Input
-                  value={editingUsuario.contrasena || ''}
+                  value={editingUsuario.contrasena || ""}
                   onChange={(e) =>
-                    setEditingUsuario({ ...editingUsuario, contrasena: e.target.value })
+                    setEditingUsuario({
+                      ...editingUsuario,
+                      contrasena: e.target.value,
+                    })
                   }
                 />
               </FormControl>
@@ -410,13 +426,20 @@ export default function Users ({ isCreateModalOpen, setIsCreateModalOpen }: User
                 <Input
                   value={editingUsuario.rol}
                   onChange={(e) =>
-                    setEditingUsuario({ ...editingUsuario, rol: e.target.value })
+                    setEditingUsuario({
+                      ...editingUsuario,
+                      rol: e.target.value,
+                    })
                   }
                 />
               </FormControl>
-              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+              <Box
+                sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
+              >
                 <Button onClick={handleSave}>Guardar</Button>
-                <Button color="danger" onClick={handleModalClose}>Cancelar</Button>
+                <Button color="danger" onClick={handleModalClose}>
+                  Cancelar
+                </Button>
               </Box>
             </Box>
           )}
