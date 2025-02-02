@@ -196,22 +196,13 @@ export default function Sidebar() {
             <ListItemButton component={Link} to="crearventas">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
-                <Typography level="title-sm">Añadir Ventas</Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem sx={{ mb: 3 }}>
-            <ListItemButton component={Link} to="ventas">
-              <ShoppingCartRoundedIcon />
-              <ListItemContent>
                 <Typography level="title-sm">Ventas</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
 
           <ListItem sx={{ mb: 3 }}>
-            <ListItemButton component={Link} to="pedidos">
+            <ListItemButton component={Link} to="crearpedidos">
               <QuestionAnswerRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Pedidos</Typography>
@@ -234,7 +225,7 @@ export default function Sidebar() {
                 <ListItemButton onClick={() => setOpen(!open)}>
                   <GroupRoundedIcon />
                   <ListItemContent>
-                    <Typography level="title-sm">Users</Typography>
+                    <Typography level="title-sm">Reportes</Typography>
                   </ListItemContent>
                   <KeyboardArrowDownIcon
                     sx={[
@@ -246,15 +237,50 @@ export default function Sidebar() {
                 </ListItemButton>
               )}
             >
-              <List sx={{ gap: 0.5 }}>
-                <ListItem sx={{ mt: 0.5, mb: 0.5 }}>
-                  <ListItemButton component={Link} to="/users/profile">
-                    My profile
+              <List sx={{ gap: 0.5, mb: 3 }}>
+                <ListItem sx={{ mb: 0 }}>
+                  <ListItemButton component={Link} to="ventas">
+                    <ShoppingCartRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="title-sm">Ventas</Typography>
+                    </ListItemContent>
                   </ListItemButton>
                 </ListItem>
-                <ListItem sx={{ mb: 3 }}>
+                <ListItem sx={{ mb: 0 }}>
+                  <ListItemButton component={Link} to="pedidos">
+                    <QuestionAnswerRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="title-sm">Pedidos</Typography>
+                    </ListItemContent>
+                  </ListItemButton>
+                </ListItem>
+              </List>
+            </Toggler>
+          </ListItem>
+
+          <ListItem nested>
+            <Toggler
+              renderToggle={({ open, setOpen }) => (
+                <ListItemButton onClick={() => setOpen(!open)}>
+                  <GroupRoundedIcon />
+                  <ListItemContent>
+                    <Typography level="title-sm">Usuarios</Typography>
+                  </ListItemContent>
+                  <KeyboardArrowDownIcon
+                    sx={[
+                      open
+                        ? { transform: "rotate(180deg)" }
+                        : { transform: "none" },
+                    ]}
+                  />
+                </ListItemButton>
+              )}
+            >
+              <List sx={{ gap: 0.5, mb: 3 }}>
+                <ListItem sx={{ mt: 0.5, mb: 0.5 }}></ListItem>
+                <ListItem sx={{ mb: 0 }}>
                   <ListItemButton component={Link} to="users">
-                    Create a new user
+                    Crear Nuevo Usuario
                   </ListItemButton>
                 </ListItem>
               </List>

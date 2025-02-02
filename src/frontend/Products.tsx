@@ -350,6 +350,46 @@ export default function Products({
       descripcion.includes(searchTerm.toLowerCase())
     );
   });
+  const handleEditSave = () => {
+    if (!editingProducto) return;
+
+    const formattedProduct = {
+      nombre: String(editingProducto.nombre), // Asegurar que es string
+      descripcion: String(editingProducto.descripcion), // Asegurar string
+      precio_compra: Number(editingProducto.precio_compra), // Convertir a número
+      precio_venta: Number(editingProducto.precio_venta), // Convertir a número
+      cantidad: Number(editingProducto.cantidad), // Convertir a número
+      marca_id: Number(editingProducto.marca_id), // Convertir a número
+      categoria_id: Number(editingProducto.categoria_id), // Convertir a número
+      modelo_id: Number(editingProducto.modelo_id), // Convertir a número
+      proveedor_ids: Array.isArray(editingProducto.proveedores)
+        ? editingProducto.proveedores.map(Number) // Convertir a array de números
+        : [],
+    };
+
+    console.log("✅ Actualizando producto:", formattedProduct);
+
+    updateProducto(
+      editingProducto.producto_id,
+      formattedProduct,
+      (updatedProducto) => {
+        setProductos((prev) =>
+          prev.map((p) =>
+            p.producto_id === updatedProducto.producto_id ? updatedProducto : p
+          )
+        );
+        toast.success("Producto actualizado exitosamente.");
+        fetchData("products", setProductos); // Recargar lista de productos
+        setIsEditModalOpen(false);
+        setEditingProducto(null);
+      },
+      (error) => {
+        console.error("Error al actualizar producto:", error);
+        toast.error("No se pudo actualizar el producto.");
+      }
+    );
+  };
+
   return (
     <React.Fragment>
       {/* Formulario de creación de producto siempre visible */}

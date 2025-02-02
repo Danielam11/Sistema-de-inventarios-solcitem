@@ -30,7 +30,7 @@ async function createProduct(req, res) {
 
     // Verificar que los datos son correctos
     if (typeof nombre !== "string" || typeof descripcion !== "string") {
-      console.error("❌ Error: `nombre` y `descripcion` deben ser strings.");
+      console.error("Error: `nombre` y `descripcion` deben ser strings.");
       return res.status(400).json({ error: "`nombre` y `descripcion` deben ser strings." });
     }
 
@@ -70,6 +70,7 @@ async function getProductById(req, res) {
 }
 
 // Actualizar un producto
+// Actualizar un producto
 async function updateProduct(req, res) {
   const { id } = req.params;
   const {
@@ -85,17 +86,36 @@ async function updateProduct(req, res) {
   } = req.body;
 
   try {
+    console.log("📥 Recibiendo datos para actualizar:", req.body);
+
+    // Validar que `nombre` y `descripcion` sean strings
+    if (typeof nombre !== "string" || typeof descripcion !== "string") {
+      console.error("Error: `nombre` y `descripcion` deben ser strings.");
+      return res.status(400).json({ error: "`nombre` y `descripcion` deben ser strings." });
+    }
+
+    // Convertir los datos a los tipos correctos
     const updatedProduct = await productModel.updateProduct(
       id,
-      { nombre, descripcion, precio_compra, precio_venta, cantidad, marca_id, categoria_id, modelo_id },
-      proveedor_ids
+      nombre, // Pasar solo el string
+      descripcion,
+      parseFloat(precio_compra), // Asegurar que sea número
+      parseFloat(precio_venta),
+      parseInt(cantidad, 10), // Convertir a entero
+      parseInt(marca_id, 10),
+      parseInt(categoria_id, 10),
+      parseInt(modelo_id, 10),
+      Array.isArray(proveedor_ids) ? proveedor_ids.map(id => parseInt(id, 10)) : [] // Convertir proveedores a números
     );
+
+    console.log("✅ Producto actualizado:", updatedProduct);
     res.status(200).json({ message: "Producto actualizado exitosamente", producto: updatedProduct });
   } catch (error) {
-    console.error("Error al actualizar el producto:", error);
+    console.error("❌ Error al actualizar el producto:", error);
     res.status(500).json({ error: "Error al actualizar el producto" });
   }
 }
+
 
 // **Eliminar un producto**
 async function deleteProduct(req, res) {

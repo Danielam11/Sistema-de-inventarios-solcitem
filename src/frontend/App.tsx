@@ -22,6 +22,7 @@ import Products from "./Products";
 import Orders from "./Orders";
 import Sales from "./Sales";
 import CreateSaleForm from "./CreateSaleForm";
+import CreateOrderForm from "./CreateOrderForm";
 
 interface RouteDetails {
   [key: string]: {
@@ -64,15 +65,19 @@ function MainContent() {
     "/dashboard/pedidos": {
       title: "Pedidos",
       buttonText: "Añadir nuevo pedido",
-      breadcrumb: ["Dashboard", "Pedidos"],
+      breadcrumb: ["Dashboard", "Reportes", "Pedidos"],
     },
     "/dashboard/ventas": {
       title: "Ventas",
-      breadcrumb: ["Dashboard", "Ventas"],
+      breadcrumb: ["Dashboard", "Reportes", "Ventas"],
     },
     "/dashboard/crearventas": {
       title: "Nueva Venta",
       breadcrumb: ["Dashboard", "Ventas"],
+    },
+    "/dashboard/crearpedidos": {
+      title: "Nuevo Pedido",
+      breadcrumb: ["Dashboard", "Pedidos"],
     },
   };
 
@@ -217,6 +222,7 @@ function MainContent() {
         <Route path="pedidos" element={<Orders />} />
         <Route path="ventas" element={<Sales />} />
         <Route path="crearventas" element={<CreateSaleForm />} />
+        <Route path="crearpedidos" element={<CreateOrderForm />} />
       </Routes>
     </Box>
   );
