@@ -50,12 +50,15 @@ async function loginUser(req, res) {
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
+
     // Comparamos la contraseña ingresada con la contraseña encriptada en la base de datos
     const isPasswordValid = await bcrypt.compare(password, user.contrasena);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
+
     console.log("Clave secreta JWT:", process.env.JWT_SECRET);
+
     // Generamos un token JWT
     const token = jwt.sign(
       { 
@@ -63,26 +66,23 @@ async function loginUser(req, res) {
         email: user.email, 
         rol: user.rol // Asegúrate de que `rol` existe en la base de datos
       }, 
-      "miCl4v3$3cR3tA!2024", 
+      process.env.JWT_SECRET || "miCl4v3$3cR3tA!2024", 
       { expiresIn: "1h" }
     );
 
-    res.status(200).json({
+    // Enviar respuesta al cliente
+    return res.status(200).json({
       message: "Login exitoso",
       token, // Devuelve el token generado
       userId: user.usuario_id,
     });
 
-    console.log( res.status(200).json({
-      message: "Login exitoso",
-      token, // Devuelve el token generado
-      userId: user.usuario_id,
-    }));
   } catch (error) {
     console.error("Error al iniciar sesión", error);
-    res.status(500).json({ error: "Error al iniciar sesión" });
+    return res.status(500).json({ error: "Error al iniciar sesión" });
   }
 }
+
 
 async function editUser(req, res) {
   const { usuario_id } = req.params;
