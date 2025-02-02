@@ -58,7 +58,7 @@ function MainContent() {
     },
     "/dashboard/productos": {
       title: "Productos",
-      buttonText: "Añadir nuevo producto",
+
       breadcrumb: ["Dashboard", "productos"],
     },
     "/dashboard/pedidos": {

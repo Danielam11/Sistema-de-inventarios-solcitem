@@ -288,7 +288,6 @@ export default function Sidebar() {
         >
           {/* Contenedor del usuario */}
           <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
-            <Typography level="title-sm">Usuario</Typography>
             <Typography level="body-xs">{userEmail}</Typography>
           </Box>
 
