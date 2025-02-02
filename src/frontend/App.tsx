@@ -1,27 +1,27 @@
-import { CssVarsProvider } from '@mui/joy/styles';
-import CssBaseline from '@mui/joy/CssBaseline';
-import Box from '@mui/joy/Box';
-import { Routes, Route, useLocation } from 'react-router-dom'; 
-import Button from '@mui/joy/Button';
-import Breadcrumbs from '@mui/joy/Breadcrumbs';
-import Link from '@mui/joy/Link';
-import Typography from '@mui/joy/Typography';
+import { CssVarsProvider } from "@mui/joy/styles";
+import CssBaseline from "@mui/joy/CssBaseline";
+import Box from "@mui/joy/Box";
+import { Routes, Route, useLocation } from "react-router-dom";
+import Button from "@mui/joy/Button";
+import Breadcrumbs from "@mui/joy/Breadcrumbs";
+import Link from "@mui/joy/Link";
+import Typography from "@mui/joy/Typography";
 
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 
-import OrderTable from './OrderTable';
-import ClientTable from './ClientTable';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import Users from './Users';
-import React, { useState } from 'react';
-import SuppliersTable from './SupplierTable';
-import Products from './Products'
-import Orders from './Orders'
-import Sales from './Sales'
-
+import OrderTable from "./OrderTable";
+import ClientTable from "./ClientTable";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import Users from "./Users";
+import React, { useState } from "react";
+import SuppliersTable from "./SupplierTable";
+import Products from "./Products";
+import Orders from "./Orders";
+import Sales from "./Sales";
+import CreateSaleForm from "./CreateSaleForm";
 
 interface RouteDetails {
   [key: string]: {
@@ -36,51 +36,61 @@ function MainContent() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const routeDetails: RouteDetails = {
-    '/dashboard/sales': {
-      title: 'Sales',
-      buttonText: 'Add new order',
-      breadcrumb: ['Dashboard', 'Orders'],
+    "/dashboard/sales": {
+      title: "Sales",
+      buttonText: "Add new order",
+      breadcrumb: ["Dashboard", "Orders"],
     },
-    '/dashboard/clientes': {
-      title: 'Clientes',
-      buttonText: 'Añadir nuevo cliente',
-      breadcrumb: ['Dashboard', 'Clientes'],
+    "/dashboard/clientes": {
+      title: "Clientes",
+      buttonText: "Añadir nuevo cliente",
+      breadcrumb: ["Dashboard", "Clientes"],
     },
-    '/dashboard/users': {
-      title: 'Users',
-      buttonText: 'Añadir nuevo Usuario',
-      breadcrumb: ['Dashboard', 'Usuarios'],
+    "/dashboard/users": {
+      title: "Users",
+      buttonText: "Añadir nuevo Usuario",
+      breadcrumb: ["Dashboard", "Usuarios"],
     },
-    '/dashboard/proveedores': {
-      title: 'Proveedores',
-      buttonText: 'Añadir nuevo Proveedor',
-      breadcrumb: ['Dashboard', 'Proveedores'],
+    "/dashboard/proveedores": {
+      title: "Proveedores",
+      buttonText: "Añadir nuevo Proveedor",
+      breadcrumb: ["Dashboard", "Proveedores"],
     },
-    '/dashboard/productos': {
-      title: 'Productos',
-      buttonText: 'Añadir nuevo producto',
-      breadcrumb: ['Dashboard', 'productos'],
+    "/dashboard/productos": {
+      title: "Productos",
+      buttonText: "Añadir nuevo producto",
+      breadcrumb: ["Dashboard", "productos"],
     },
-    '/dashboard/pedidos': {
-      title: 'Pedidos',
-      buttonText: 'Añadir nuevo pedido',
-      breadcrumb: ['Dashboard', 'Pedidos'],
+    "/dashboard/pedidos": {
+      title: "Pedidos",
+      buttonText: "Añadir nuevo pedido",
+      breadcrumb: ["Dashboard", "Pedidos"],
     },
-    '/dashboard/ventas': {
-      title: 'Ventas',
-      buttonText: 'Añadir nueva Venta',
-      breadcrumb: ['Dashboard', 'Ventas'],
+    "/dashboard/ventas": {
+      title: "Ventas",
+      breadcrumb: ["Dashboard", "Ventas"],
     },
-  }
+    "/dashboard/crearventas": {
+      title: "Nueva Venta",
+      breadcrumb: ["Dashboard", "Ventas"],
+    },
+  };
 
   const currentRoute = routeDetails[location.pathname] || {
-    title: 'Page',
-    buttonText: 'Action',
-    breadcrumb: ['Dashboard'],
+    title: "Page",
+    buttonText: "Action",
+    breadcrumb: ["Dashboard"],
   };
 
   const handleOpenModal = () => {
-    if (['/dashboard/users', '/dashboard/clientes', '/dashboard/proveedores', '/dashboard/productos'].includes(location.pathname)) {
+    if (
+      [
+        "/dashboard/users",
+        "/dashboard/clientes",
+        "/dashboard/proveedores",
+        "/dashboard/productos",
+      ].includes(location.pathname)
+    ) {
       setIsCreateModalOpen(true);
     }
   };
@@ -92,20 +102,20 @@ function MainContent() {
       sx={{
         px: { xs: 2, md: 6 },
         pt: {
-          xs: 'calc(12px + var(--Header-height))',
-          sm: 'calc(12px + var(--Header-height))',
+          xs: "calc(12px + var(--Header-height))",
+          sm: "calc(12px + var(--Header-height))",
           md: 3,
         },
         pb: { xs: 2, sm: 2, md: 3 },
         flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         minWidth: 0,
-        height: '100dvh',
+        height: "100dvh",
         gap: 1,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
         <Breadcrumbs
           size="sm"
           aria-label="breadcrumbs"
@@ -118,9 +128,19 @@ function MainContent() {
           {currentRoute.breadcrumb.map((crumb, index) => (
             <Link
               key={index}
-              underline={index === currentRoute.breadcrumb.length - 1 ? 'none' : 'hover'}
-              color={index === currentRoute.breadcrumb.length - 1 ? 'primary' : 'neutral'}
-              href={index === currentRoute.breadcrumb.length - 1 ? undefined : '#some-link'}
+              underline={
+                index === currentRoute.breadcrumb.length - 1 ? "none" : "hover"
+              }
+              color={
+                index === currentRoute.breadcrumb.length - 1
+                  ? "primary"
+                  : "neutral"
+              }
+              href={
+                index === currentRoute.breadcrumb.length - 1
+                  ? undefined
+                  : "#some-link"
+              }
               sx={{ fontSize: 12, fontWeight: 500 }}
             >
               {crumb}
@@ -131,28 +151,28 @@ function MainContent() {
 
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           mb: 1,
           gap: 1,
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { xs: 'start', sm: 'center' },
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "start", sm: "center" },
+          flexWrap: "wrap",
+          justifyContent: "space-between",
         }}
       >
         <Typography level="h2" component="h1">
           {currentRoute.title}
         </Typography>
         {currentRoute.buttonText && (
-        <Button
-          color="primary"
-          startDecorator={<DownloadRoundedIcon />}
-          size="sm"
-          onClick={handleOpenModal}
-        >
-          {currentRoute.buttonText}
-        </Button>
-      )}
+          <Button
+            color="primary"
+            startDecorator={<DownloadRoundedIcon />}
+            size="sm"
+            onClick={handleOpenModal}
+          >
+            {currentRoute.buttonText}
+          </Button>
+        )}
       </Box>
 
       <Routes>
@@ -168,14 +188,14 @@ function MainContent() {
         />
         <Route path="sales" element={<OrderTable />} />
         <Route
-        path="users"
-        element={
-          <Users
-            isCreateModalOpen={isCreateModalOpen}
-            setIsCreateModalOpen={setIsCreateModalOpen}
-          />
-        }
-      />
+          path="users"
+          element={
+            <Users
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
         <Route
           path="proveedores"
           element={
@@ -186,16 +206,17 @@ function MainContent() {
           }
         />
         <Route
-        path="productos"
-        element={
-          <Products
-            isCreateModalOpen={isCreateModalOpen}
-            setIsCreateModalOpen={setIsCreateModalOpen}
-          />
-        }
-      />
-        <Route path="pedidos" element={<Orders/>} />
+          path="productos"
+          element={
+            <Products
+              isCreateModalOpen={isCreateModalOpen}
+              setIsCreateModalOpen={setIsCreateModalOpen}
+            />
+          }
+        />
+        <Route path="pedidos" element={<Orders />} />
         <Route path="ventas" element={<Sales />} />
+        <Route path="crearventas" element={<CreateSaleForm />} />
       </Routes>
     </Box>
   );
@@ -205,7 +226,7 @@ export default function App() {
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+      <Box sx={{ display: "flex", minHeight: "100dvh" }}>
         <Header />
         <Sidebar />
         <MainContent />

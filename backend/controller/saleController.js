@@ -2,10 +2,16 @@ const salesModel = require("../model/saleModel");
 
 // Crear una nueva venta
 function createSale(req, res) {
-  const { fecha_venta, clienteId, usuarioId, total, subtotal } = req.body; // Cambiado a fecha_venta
+  const { clienteId, total, subtotal } = req.body; // Ya no recibimos usuarioId desde el body
+  const usuarioId = req.user.userId; // Obtener el usuarioId desde el token
+
+  // Validar que el clienteId sea un número válido
+  if (!clienteId || isNaN(clienteId)) {
+    return res.status(400).json({ error: "El ID de cliente no es válido." });
+  }
 
   salesModel
-    .createSale(fecha_venta, clienteId, usuarioId, total, subtotal) // Cambiado a fecha_venta
+    .createSale(clienteId, usuarioId, total, subtotal)
     .then((sale) => {
       res.status(201).json({
         message: "Venta creada exitosamente",
@@ -17,7 +23,6 @@ function createSale(req, res) {
       res.status(500).json({ error: "Error al crear la venta" });
     });
 }
-
 // Obtener todas las ventas
 function getAllSales(req, res) {
   salesModel

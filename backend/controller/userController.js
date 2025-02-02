@@ -57,15 +57,27 @@ async function loginUser(req, res) {
     }
     console.log("Clave secreta JWT:", process.env.JWT_SECRET);
     // Generamos un token JWT
-    const token = jwt.sign({ userId: user.usuario_id }, "miCl4v3$3cR3tA!2024", {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { 
+        userId: user.usuario_id, 
+        email: user.email, 
+        rol: user.rol // Asegúrate de que `rol` existe en la base de datos
+      }, 
+      "miCl4v3$3cR3tA!2024", 
+      { expiresIn: "1h" }
+    );
 
     res.status(200).json({
       message: "Login exitoso",
       token, // Devuelve el token generado
       userId: user.usuario_id,
     });
+
+    console.log( res.status(200).json({
+      message: "Login exitoso",
+      token, // Devuelve el token generado
+      userId: user.usuario_id,
+    }));
   } catch (error) {
     console.error("Error al iniciar sesión", error);
     res.status(500).json({ error: "Error al iniciar sesión" });

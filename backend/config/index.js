@@ -10,6 +10,7 @@ const productRoutes = require("../route/productRoute.js");
 const saleRoutes = require("../route/saleRoute.js");
 const orderRoutes = require("../route/orderRoute.js");
 const saleDetailRoutes = require("../route/saleDetailRoute.js");
+const iva = require("../route/ivaRoute.js");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -30,6 +31,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/sales", saleRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/salesDetails",saleDetailRoutes);
+app.use("/api/iva",iva);
 
 
 // Función para iniciar el servidor

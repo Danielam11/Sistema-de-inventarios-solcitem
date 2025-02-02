@@ -135,14 +135,14 @@ async function updateDetalleVenta(detalleId, productoId, cantidadProductos) {
       WHERE dv.detalle_id = $1`;
     const detalleResult = await pool.query(detalleQuery, [detalleId]);
 
-    console.log("Resultado de la consulta del detalle de venta:", detalleResult.rows);
+   
 
     if (detalleResult.rows.length === 0) {
       throw new Error("Detalle de venta no encontrado");
     }
 
     const detalle = detalleResult.rows[0];
-    console.log("Detalle de venta encontrado:", detalle);
+ 
 
     // Obtener el nuevo precio_unitario del producto
     const productoQuery = `
@@ -162,7 +162,7 @@ async function updateDetalleVenta(detalleId, productoId, cantidadProductos) {
 
     // Calcular el nuevo subtotal del detalle de venta
     const nuevoSubtotalDetalle = cantidadProductos * nuevoPrecioUnitario;
-    console.log("Nuevo subtotal del detalle:", nuevoSubtotalDetalle);
+
 
     // Actualizar el detalle de venta (incluyendo producto_id)
     const updateDetalleQuery = `
@@ -173,17 +173,17 @@ async function updateDetalleVenta(detalleId, productoId, cantidadProductos) {
     const updateDetalleValues = [productoId, cantidadProductos, nuevoPrecioUnitario, nuevoSubtotalDetalle, detalleId];
     const updateDetalleResult = await pool.query(updateDetalleQuery, updateDetalleValues);
 
-    console.log("Resultado de la actualización del detalle:", updateDetalleResult.rows);
+    
 
     // Recalcular el subtotal de la venta
     const subtotalVentaQuery = `
       SELECT SUM(subtotal) AS subtotal FROM Detalle_venta WHERE venta_id = $1`;
     const subtotalVentaResult = await pool.query(subtotalVentaQuery, [detalle.venta_id]);
 
-    console.log("Resultado del cálculo del subtotal de la venta:", subtotalVentaResult.rows);
+    
 
     const nuevoSubtotalVenta = subtotalVentaResult.rows[0].subtotal || 0; // Si no hay detalles, el subtotal es 0
-    console.log("Nuevo subtotal de la venta:", nuevoSubtotalVenta);
+   
 
     // Actualizar el subtotal y el total en la tabla Ventas
     const updateVentaQuery = `
@@ -194,7 +194,7 @@ async function updateDetalleVenta(detalleId, productoId, cantidadProductos) {
     const updateVentaValues = [nuevoSubtotalVenta, nuevoSubtotalVenta, detalle.venta_id]; // Aquí puedes ajustar el cálculo del total si es necesario
     const updateVentaResult = await pool.query(updateVentaQuery, updateVentaValues);
 
-    console.log("Resultado de la actualización de la venta:", updateVentaResult.rows);
+
 
     return { message: "Detalle de venta actualizado exitosamente" };
   } catch (error) {

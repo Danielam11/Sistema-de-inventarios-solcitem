@@ -512,6 +512,7 @@ export default function Products({ isCreateModalOpen, setIsCreateModalOpen }: Pr
                   type="number"
                   value={editingProducto.cantidad}
                   onChange={handleEditChange}
+                  disabled
                 />
               </FormControl>
               <FormControl>

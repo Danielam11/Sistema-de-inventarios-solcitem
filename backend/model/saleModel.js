@@ -1,14 +1,14 @@
 const pool = require("../config/db");
 
 // Crear una nueva venta
-async function createSale(fechaVenta, clienteId, usuarioId, total, subtotal) {
+async function createSale(clienteId, usuarioId, total, subtotal) {
   try {
     const query = `
-      INSERT INTO Ventas (fecha_venta, cliente_id, usuario_id, total, subtotal)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *`;
-    const values = [fechaVenta, clienteId, usuarioId, total, subtotal];
+      INSERT INTO Ventas (cliente_id, usuario_id, total, subtotal)
+      VALUES ($1, $2, $3, $4) RETURNING *`;
+    const values = [clienteId, usuarioId, total, subtotal];
     const result = await pool.query(query, values);
-    return result.rows[0]; // Retorna la venta recién creada
+    return result.rows[0];
   } catch (error) {
     throw new Error("Error al crear la venta: " + error.message);
   }

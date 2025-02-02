@@ -1,0 +1,639 @@
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  Select,
+  Option,
+  Typography,
+  Table,
+  Grid,
+  Modal,
+  Sheet,
+} from "@mui/joy";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { jwtDecode } from "jwt-decode";
+import SearchIcon from "@mui/icons-material/Search";
+
+const getUserIdFromToken = () => {
+  const token = localStorage.getItem("token"); // Obtener el token guardado
+  if (!token) {
+    console.error("No hay token disponible");
+    return null;
+  }
+
+  const decodedToken = jwtDecode(token); // Decodificar el token
+  return decodedToken.userId; // Obtener el userId desde el token
+};
+
+interface CreateSaleFormProps {
+  onSaleCreated?: () => void;
+}
+
+export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
+  const [usuarioId, setUsuarioId] = useState<number | "">("");
+  const [clienteId, setClienteId] = useState<number | "">("");
+  const [productos, setProductos] = useState<
+    {
+      productoId: number;
+      cantidad: number;
+      descripcion?: string;
+      valor?: number;
+    }[]
+  >([{ productoId: 0, cantidad: 1 }]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [ivas, setIvas] = useState<any[]>([]);
+  const [selectedIva, setSelectedIva] = useState<number>(0);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedProductIndex, setSelectedProductIndex] = useState<
+    number | null
+  >(null);
+  const [total, setTotal] = useState(0);
+
+  const [newClient, setNewClient] = useState({
+    identificacion: "",
+    nombre: "",
+    direccion: "",
+    telefono: "",
+    email: "",
+  });
+
+  // Cargar datos iniciales (usuarios, clientes y productos)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [usersResponse, clientsResponse, productsResponse, ivasResponse] =
+          await Promise.all([
+            fetch("http://localhost:3000/api/users"),
+            fetch("http://localhost:3000/api/clients"),
+            fetch("http://localhost:3000/api/products"),
+            fetch("http://localhost:3000/api/iva"),
+          ]);
+
+        if (
+          !usersResponse.ok ||
+          !clientsResponse.ok ||
+          !productsResponse.ok ||
+          !ivasResponse.ok
+        ) {
+          throw new Error("Error al cargar los datos iniciales");
+        }
+
+        const usersData = await usersResponse.json();
+        const clientsData = await clientsResponse.json();
+        const productsData = await productsResponse.json();
+        const ivasData = await ivasResponse.json();
+
+        setUsers(usersData);
+        setClients(clientsData);
+        setProducts(productsData);
+        setIvas(ivasData);
+      } catch (error) {
+        console.error(error);
+        toast.error("Error al cargar los datos iniciales");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Calcular el total de la venta con IVA
+  useEffect(() => {
+    let newTotal = 0;
+
+    productos.forEach((producto) => {
+      const selectedProduct = products.find(
+        (p) => p.producto_id === producto.productoId
+      );
+
+      if (selectedProduct) {
+        const precio = Number(selectedProduct.precio_venta) || 0;
+        const cantidad = Number(producto.cantidad) || 0;
+        newTotal += precio * cantidad;
+      }
+    });
+
+    const iva = selectedIva / 100;
+    const totalConIva = newTotal * (1 + iva);
+
+    setTotal(parseFloat(totalConIva.toFixed(2)));
+  }, [productos, products, selectedIva]);
+
+  // Agregar un nuevo producto
+  const handleAddProduct = () => {
+    setProductos([...productos, { productoId: 0, cantidad: 1 }]);
+  };
+
+  // Eliminar un producto
+  const handleRemoveProduct = (index: number) => {
+    setProductos(productos.filter((_, i) => i !== index));
+  };
+
+  // Manejar cambios en los productos
+  const handleProductChange = (index: number, field: string, value: any) => {
+    const newProductos = [...productos];
+    newProductos[index] = { ...newProductos[index], [field]: value };
+
+    if (field === "productoId") {
+      const selectedProduct = products.find((p) => p.producto_id === value);
+      if (selectedProduct) {
+        newProductos[index].descripcion = selectedProduct.nombre;
+        newProductos[index].valor = selectedProduct.precio_venta;
+      }
+    }
+
+    setProductos(newProductos);
+  };
+
+  // Crear un nuevo cliente
+  const handleCreateClient = async () => {
+    if (!newClient.identificacion || !newClient.nombre) {
+      toast.error("Todos los campos del cliente son obligatorios.");
+      return null;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newClient),
+      });
+
+      if (!response.ok) throw new Error("Error al crear el cliente");
+
+      const result = await response.json();
+      return result.clientId;
+    } catch (error) {
+      toast.error("No se pudo crear el cliente.");
+      return null;
+    }
+  };
+
+  // Verificar si un cliente ya existe
+  const checkIfClientExists = async (identificacion: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/clients/identificacion/${identificacion}`
+      );
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return data?.cliente_id ?? null;
+    } catch {
+      return null;
+    }
+  };
+  const handleOpenModal = (index: number) => {
+    setSelectedProductIndex(index);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedProductIndex(null);
+  };
+
+  const handleSelectProduct = (productoId: number) => {
+    if (selectedProductIndex !== null) {
+      handleProductChange(selectedProductIndex, "productoId", productoId);
+      handleCloseModal();
+    }
+  };
+  // Manejar el envío del formulario
+  const handleSubmit = async () => {
+    try {
+      let clienteIdFinal = clienteId;
+
+      // Verificar si el cliente ya existe o crear uno nuevo
+      if (!clienteIdFinal && newClient.identificacion) {
+        const clienteExistenteId = await checkIfClientExists(
+          newClient.identificacion
+        );
+
+        if (clienteExistenteId) {
+          clienteIdFinal = clienteExistenteId;
+        } else {
+          const clienteIdCreado = await handleCreateClient();
+          if (!clienteIdCreado) return;
+          clienteIdFinal = clienteIdCreado;
+        }
+
+        setClienteId(clienteIdFinal);
+      }
+
+      // Obtener el userId desde el token
+      const usuarioId = getUserIdFromToken();
+      console.log("usuarioId:", usuarioId); // Depuración
+      console.log("clienteIdFinal:", clienteIdFinal); // Depuración
+      console.log("total:", total); // Depuración
+
+      // Validar campos obligatorios
+      if (!usuarioId || !clienteIdFinal) {
+        toast.error("Todos los campos son obligatorios.");
+        return;
+      }
+
+      // Validar productos
+      const productosInvalidos = productos.some(
+        (producto) => !producto.productoId || producto.cantidad <= 0
+      );
+
+      if (productosInvalidos) {
+        toast.error(
+          "Todos los productos deben tener un ID y una cantidad válida."
+        );
+        return;
+      }
+
+      // Crear la venta
+      const ventaResponse = await fetch("http://localhost:3000/api/sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          usuarioId: Number(usuarioId),
+          clienteId: Number(clienteIdFinal),
+          total: total,
+        }),
+      });
+
+      if (!ventaResponse.ok) {
+        const errorData = await ventaResponse.json();
+        console.error("Error al crear la venta:", errorData); // Depuración
+        throw new Error(errorData.message || "Error al crear la venta");
+      }
+
+      const ventaResult = await ventaResponse.json();
+      const ventaId = ventaResult.sale.venta_id;
+
+      // Crear los detalles de la venta
+      for (const producto of productos) {
+        const detalleResponse = await fetch(
+          "http://localhost:3000/api/salesDetails",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              ventaId: ventaId,
+              productoId: producto.productoId,
+              cantidadProductos: producto.cantidad,
+            }),
+          }
+        );
+
+        if (!detalleResponse.ok) {
+          const errorData = await detalleResponse.json();
+          throw new Error(
+            errorData.message || "Error al crear el detalle de la venta"
+          );
+        }
+      }
+
+      toast.success("Venta y detalles creados exitosamente.");
+
+      // Limpiar el formulario
+      if (onSaleCreated) {
+        onSaleCreated();
+      }
+
+      setUsuarioId("");
+      setClienteId("");
+      setProductos([{ productoId: 0, cantidad: 1 }]);
+      setNewClient({
+        identificacion: "",
+        nombre: "",
+        direccion: "",
+        telefono: "",
+        email: "",
+      });
+    } catch (error) {
+      console.error("Error en handleSubmit:", error); // Depuración
+      toast.error(error.message || "No se pudo crear la venta o los detalles.");
+    }
+  };
+
+  return (
+    <Box sx={{ padding: 1 }}>
+      {/* Contenedor Cliente */}
+      <Box sx={{ padding: 1.5, borderRadius: 1, mb: 2 }}>
+        <Typography level="h5" sx={{ mb: 1, fontSize: "1rem" }}>
+          Datos del titular
+        </Typography>
+        <Grid container spacing={3}>
+          {[
+            { label: "Identificación *", key: "identificacion" },
+            { label: "Nombre Completo *", key: "nombre" },
+            { label: "Dirección", key: "direccion" },
+            { label: "Teléfono *", key: "telefono" },
+          ].map(({ label, key }) => (
+            <Grid item xs={12} sm={6} md={3} key={key}>
+              <FormControl fullWidth>
+                <FormLabel sx={{ fontSize: "0.875rem" }}>{label}</FormLabel>
+                <Input
+                  size="sm"
+                  value={newClient[key]}
+                  onChange={(e) =>
+                    setNewClient({ ...newClient, [key]: e.target.value })
+                  }
+                />
+              </FormControl>
+            </Grid>
+          ))}
+
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <FormLabel sx={{ fontSize: "0.875rem" }}>Correo</FormLabel>
+              <Input
+                size="sm"
+                value={newClient.email}
+                onChange={(e) =>
+                  setNewClient({ ...newClient, email: e.target.value })
+                }
+              />
+            </FormControl>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Contenedor Venta y Productos */}
+      <Box
+        sx={{
+          padding: 1.5,
+          borderRadius: 1,
+          borderTop: "2px solid #1976d2",
+          overflowY: "auto",
+        }}
+      >
+        <Typography
+          level="h5"
+          sx={{ mb: 1, fontSize: "1rem", marginBottom: "0" }}
+        >
+          Detalle de la Venta
+        </Typography>
+
+        {/* Tabla de productos */}
+        <Box
+          sx={{
+            maxHeight: 200,
+            overflowY: "auto",
+            padding: 1,
+          }}
+        >
+          <Table sx={{ mt: 2, overflowY: "auto" }}>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Cantidad</th>
+                <th>Cantidad Existente</th>
+                <th>Precio Unitario</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productos.map((producto, index) => {
+                const selectedProduct = products.find(
+                  (p) => p.producto_id === producto.productoId
+                );
+                const precioUnitario = selectedProduct
+                  ? selectedProduct.precio_venta
+                  : 0;
+                const subtotal = precioUnitario * producto.cantidad;
+
+                return (
+                  <tr key={index}>
+                    <td>
+                      <Button
+                        size="sm"
+                        variant="plain" // Hace que el botón no tenga relleno de color
+                        sx={{
+                          minHeight: "30px", // Ajusta la altura mínima
+                          padding: "4px 8px", // Ajusta el relleno para que no se vea vacío
+                          border: "1px solid", // Opción: añade un borde si lo deseas
+                          display: "flex", // Para centrar el contenido correctamente
+                          alignItems: "center",
+                          gap: "4px", // Espaciado entre el icono y el texto
+                        }}
+                        onClick={() => handleOpenModal(index)}
+                        startDecorator={!selectedProduct && <SearchIcon />} // Usa startDecorator correctamente
+                      >
+                        {selectedProduct
+                          ? selectedProduct.nombre
+                          : "Seleccionar"}
+                      </Button>
+                    </td>
+                    <td>{selectedProduct?.marca_nombre || "-"}</td>
+                    <td>{selectedProduct?.modelo_nombre || "-"}</td>
+                    <td>
+                      <Input
+                        size="sm"
+                        type="number"
+                        value={producto.cantidad}
+                        onChange={(e) =>
+                          handleProductChange(index, "cantidad", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td>{selectedProduct?.cantidad || "-"}</td>
+                    <td>${precioUnitario}</td>
+                    <td>
+                      <Button
+                        size="sm"
+                        color="danger"
+                        onClick={() => handleRemoveProduct(index)}
+                      >
+                        Quitar
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+
+          <Button size="sm" onClick={handleAddProduct} sx={{ mt: 1 }}>
+            Agregar Producto
+          </Button>
+        </Box>
+
+        {/* Tabla de IVA, Total y Guardar Venta */}
+        <Table sx={{ mt: 1, width: "100%", fontSize: "0.8rem" }}>
+          <tbody>
+            {/* Fila del IVA */}
+            <tr style={{ height: "28px" }}>
+              <td style={{ width: "50%" }}>
+                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                  <FormControl sx={{ minWidth: "100px" }}>
+                    <FormLabel sx={{ fontSize: "0.75rem" }}>IVA</FormLabel>
+                    <Select
+                      name="iva"
+                      value={selectedIva || ""}
+                      onChange={(event, newValue) => {
+                        if (newValue !== null && newValue !== undefined) {
+                          setSelectedIva(Number(newValue));
+                        }
+                      }}
+                      sx={{
+                        minHeight: "26px",
+                        fontSize: "1 rem",
+                        padding: "2px 6px",
+                        minWidth: "200px",
+                      }}
+                    >
+                      {ivas.map((iva) => (
+                        <Option key={iva.iva_id} value={iva.porcentaje}>
+                          {iva.porcentaje}%
+                        </Option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </td>
+            </tr>
+
+            {/* Fila del Total */}
+            <tr style={{ height: "28px" }}>
+              <td style={{ width: "50%", borderTop: 0 }}>
+                <Box
+                  sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
+                >
+                  <Box
+                    sx={{
+                      padding: "6px 12px",
+                      border: "1px solid #007bff",
+                      borderRadius: "4px",
+                      minWidth: "200px",
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      fontSize: "1 rem",
+                    }}
+                  >
+                    <Typography level="h6">Total: ${total}</Typography>
+                  </Box>
+                </Box>
+              </td>
+            </tr>
+
+            {/* Fila con el Botón de Guardar Venta */}
+            <tr style={{ height: "28px" }}>
+              <td style={{ width: "50%", borderTop: 0 }}>
+                <Box
+                  sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}
+                >
+                  <Button
+                    size="sm"
+                    onClick={handleSubmit}
+                    sx={{
+                      padding: "6px 12px",
+                      fontSize: "1 rem",
+                      minWidth: "200px",
+                      minHeight: "28px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#0056b3",
+                      },
+                    }}
+                  >
+                    Guardar Venta
+                  </Button>
+                </Box>
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+      </Box>
+
+      {/* Modal para seleccionar productos */}
+      <Modal open={openModal} onClose={handleCloseModal}>
+        <Box sx={{ width: "80%", maxWidth: 1000, margin: "auto", mt: 5 }}>
+          <Sheet sx={{ width: "100%", overflow: "auto", borderRadius: "sm" }}>
+            <Table stickyHeader sx={{ tableLayout: "auto" }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "center" }}>Producto Id</th>
+                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                    Nombre
+                  </th>
+                  <th style={{ maxWidth: "210px", wordWrap: "break-word" }}>
+                    Descripción
+                  </th>
+                  <th>Precio Compra</th>
+                  <th>Precio Venta</th>
+                  <th style={{ maxWidth: "150px", textAlign: "center" }}>
+                    Cantidad
+                  </th>
+                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                    Marca
+                  </th>
+                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                    Modelo
+                  </th>
+                  <th style={{ maxWidth: "210px", wordWrap: "break-word" }}>
+                    Categoría
+                  </th>
+                  <th style={{ textAlign: "center" }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((producto) => (
+                  <tr key={producto.producto_id}>
+                    <td style={{ textAlign: "center", width: "50px" }}>
+                      {producto.producto_id}
+                    </td>
+                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                      {producto.nombre}
+                    </td>
+                    <td style={{ maxWidth: "210px", wordWrap: "break-word" }}>
+                      {producto.descripcion}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {producto.precio_compra}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {producto.precio_venta}
+                    </td>
+                    <td style={{ maxWidth: "150px", textAlign: "center" }}>
+                      {producto.cantidad}
+                    </td>
+                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                      {producto.marca_nombre}
+                    </td>
+                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
+                      {producto.modelo_nombre}
+                    </td>
+                    <td style={{ maxWidth: "210px", wordWrap: "break-word" }}>
+                      {producto.categoria_nombre}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleSelectProduct(producto.producto_id)
+                        }
+                      >
+                        Seleccionar
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Sheet>
+        </Box>
+      </Modal>
+    </Box>
+  );
+}
