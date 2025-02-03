@@ -29,6 +29,27 @@ function fetchPedidos(setPedidos: (data: any[]) => void) {
     })
     .catch((error) => console.error("Error fetching orders:", error));
 }
+function notifySuccess(message: string) {
+  toast.success(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
+
+function notifyError(message: string) {
+  toast.error(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
 
 function fetchOrderById(orderId: number, setOrderDetails: (data: any) => void) {
   fetch(`http://localhost:3000/api/orders/${orderId}`)

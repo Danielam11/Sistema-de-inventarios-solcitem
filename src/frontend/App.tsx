@@ -6,7 +6,8 @@ import Button from "@mui/joy/Button";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import Link from "@mui/joy/Link";
 import Typography from "@mui/joy/Typography";
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
@@ -44,11 +45,11 @@ function MainContent() {
     },
     "/dashboard/clientes": {
       title: "Clientes",
-      buttonText: "Añadir nuevo cliente",
+
       breadcrumb: ["Dashboard", "Clientes"],
     },
     "/dashboard/users": {
-      title: "Users",
+      title: "Usuarios",
       buttonText: "Añadir nuevo Usuario",
       breadcrumb: ["Dashboard", "Usuarios"],
     },
@@ -231,6 +232,18 @@ export default function App() {
         <Header />
         <Sidebar />
         <MainContent />
+        {/* Agregar ToastContainer aquí */}
+        <ToastContainer
+          position="top-right" // Posición del toast
+          autoClose={3000} // Tiempo de autocierre en milisegundos
+          hideProgressBar={false} // Mostrar barra de progreso
+          newestOnTop={false} // Los nuevos toasts aparecen arriba
+          closeOnClick // Cerrar al hacer clic
+          rtl={false} // Dirección del texto
+          pauseOnFocusLoss // Pausar cuando pierde foco
+          draggable // Permitir arrastrar
+          pauseOnHover // Pausar al pasar el mouse
+        />
       </Box>
     </CssVarsProvider>
   );

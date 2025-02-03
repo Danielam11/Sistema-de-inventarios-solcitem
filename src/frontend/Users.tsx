@@ -20,6 +20,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
+import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 
 interface UsersProps {
@@ -213,6 +214,45 @@ export default function Users({
 
   const handleCreateSave = async () => {
     try {
+      const { email, password, nombre_completo, rol } = newUsuario;
+
+      // Validar campos obligatorios
+      if (!email || !password || !nombre_completo || !rol) {
+        toast.error("Todos los campos son obligatorios.");
+        return;
+      }
+
+      // Validar formato del correo electrónico
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error("Por favor, ingresa un correo electrónico válido.");
+        return;
+      }
+
+      // Validar formato de la contraseña
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        toast.error(
+          "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números."
+        );
+        return;
+      }
+
+      // Validar formato del nombre completo
+      const nameRegex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ]+$/;
+      if (!nameRegex.test(nombre_completo)) {
+        toast.error("El nombre solo puede contener letras y espacios.");
+        return;
+      }
+
+      // Validar rol permitido
+      const allowedRoles = ["admin", "user"];
+      if (!allowedRoles.includes(rol)) {
+        toast.error("El rol seleccionado no es válido.");
+        return;
+      }
+
+      // Enviar la solicitud al backend
       const response = await fetch("http://localhost:3000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -225,7 +265,6 @@ export default function Users({
       }
 
       const { userId, message } = await response.json();
-
       const createdUsuario = {
         usuario_id: userId,
         email: newUsuario.email,

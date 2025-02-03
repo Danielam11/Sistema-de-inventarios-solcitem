@@ -592,6 +592,15 @@ export default function SalesTable() {
 
     return `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`;
   };
+
+  useEffect(() => {
+    if (fromDate && toDate) {
+      filterSalesByDate();
+    } else {
+      // Si no hay fechas seleccionadas, mostrar todas las ventas
+      setFilteredSales(sales);
+    }
+  }, [fromDate, toDate, sales]);
   // Preparar los datos para exportar a CSV
   const csvData = [
     ...filteredSales.map((sale) => ({

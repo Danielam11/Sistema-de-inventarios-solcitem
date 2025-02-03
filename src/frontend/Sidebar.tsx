@@ -12,20 +12,26 @@ import ListItemButton, { listItemButtonClasses } from "@mui/joy/ListItemButton";
 import ListItemContent from "@mui/joy/ListItemContent";
 import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
-
+import InventoryIcon from "@mui/icons-material/Inventory";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AssignmentRoundedIcon from "@mui/icons-material/AssignmentRounded";
 import QuestionAnswerRoundedIcon from "@mui/icons-material/QuestionAnswerRounded";
 import GroupRoundedIcon from "@mui/icons-material/GroupRounded";
+import PersonIcon from "@mui/icons-material/Person";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import BrightnessAutoRoundedIcon from "@mui/icons-material/BrightnessAutoRounded";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import ShieldIcon from "@mui/icons-material/Shield";
+import logo from "./img/LOGO.png";
 
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ColorSchemeToggle from "./ColorSchemeToggle.tsx";
 import { closeSidebar } from "./utils.ts";
 import { jwtDecode } from "jwt-decode";
@@ -143,9 +149,17 @@ export default function Sidebar() {
         onClick={() => closeSidebar()}
       />
       <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        <IconButton variant="soft" color="primary" size="sm">
-          <BrightnessAutoRoundedIcon />
-        </IconButton>
+        {/* Imagen (ajusta la ruta según tu proyecto) */}
+        <img
+          src={logo}
+          alt="Logo"
+          style={{
+            width: "30px",
+            height: "30px",
+            borderRadius: "4px", // Opcional para bordes redondeados
+          }}
+        />
+
         <Typography level="title-lg">Solcitem</Typography>
         <ColorSchemeToggle sx={{ ml: "auto" }} />
       </Box>
@@ -176,7 +190,7 @@ export default function Sidebar() {
         >
           <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="productos">
-              <HomeRoundedIcon />
+              <InventoryIcon />
               <ListItemContent>
                 <Typography level="title-sm">Productos</Typography>
               </ListItemContent>
@@ -185,7 +199,7 @@ export default function Sidebar() {
 
           <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="clientes">
-              <DashboardRoundedIcon />
+              <PersonIcon />
               <ListItemContent>
                 <Typography level="title-sm">Clientes</Typography>
               </ListItemContent>
@@ -203,7 +217,7 @@ export default function Sidebar() {
 
           <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="crearpedidos">
-              <QuestionAnswerRoundedIcon />
+              <LocalShippingIcon />
               <ListItemContent>
                 <Typography level="title-sm">Pedidos</Typography>
               </ListItemContent>
@@ -212,7 +226,7 @@ export default function Sidebar() {
 
           <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="proveedores">
-              <QuestionAnswerRoundedIcon />
+              <PeopleAltIcon />
               <ListItemContent>
                 <Typography level="title-sm">Proveedores</Typography>
               </ListItemContent>
@@ -223,7 +237,7 @@ export default function Sidebar() {
             <Toggler
               renderToggle={({ open, setOpen }) => (
                 <ListItemButton onClick={() => setOpen(!open)}>
-                  <GroupRoundedIcon />
+                  <ReceiptIcon />
                   <ListItemContent>
                     <Typography level="title-sm">Reportes</Typography>
                   </ListItemContent>
@@ -292,10 +306,17 @@ export default function Sidebar() {
       </Box>
       <Divider />
       <Box sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}>
-        <Avatar
-          variant="outlined"
-          size="sm"
-          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
+        <AccountCircleIcon
+          sx={{
+            color: "#2196f3", // Color personalizado
+            fontSize: "30px", // Tamaño del ícono
+            // Margen
+            "&:hover": {
+              // Efecto hover
+              color: "#1976d2",
+              transform: "scale(1.2)",
+            },
+          }}
         />
         <Box
           sx={{

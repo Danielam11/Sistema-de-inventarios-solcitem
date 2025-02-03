@@ -63,6 +63,28 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
     email: "",
   });
 
+  function notifySuccess(message: string) {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
+  function notifyError(message: string) {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }
+
   // Cargar datos iniciales (usuarios, clientes y productos)
   useEffect(() => {
     const fetchData = async () => {
@@ -207,7 +229,36 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   };
   // Manejar el envío del formulario
   const handleSubmit = async () => {
+    console.log("handleSubmit se ha ejecutado"); // Mensaje de depuración
     try {
+      // Validar campos obligatorios del cliente
+      if (
+        !newClient.identificacion ||
+        !newClient.nombre ||
+        !newClient.telefono
+      ) {
+        notifyError("Ingrese todos los campos obligatorios.");
+        return;
+      }
+
+      if (!/^\d+$/.test(newClient.telefono)) {
+        notifyError(
+          "El teléfono no debe tener letras u otros caracteres especiales."
+        );
+        return;
+      }
+
+      // Validar formato de identificación (ejemplo: mínimo 5 caracteres)
+      if (newClient.identificacion.length < 8) {
+        notifyError("La identificacion debe tener minimo 8 caracteres ");
+        return;
+      }
+      // Validar formato de teléfono (entre 10 y 15 caracteres)
+      if (newClient.telefono.length < 10 || newClient.telefono.length > 15) {
+        notifyError("El teléfono debe tener entre 10 y 15 caracteres.");
+        return;
+      }
+
       let clienteIdFinal = clienteId;
 
       // Verificar si el cliente ya existe o crear uno nuevo
@@ -215,27 +266,23 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         const clienteExistenteId = await checkIfClientExists(
           newClient.identificacion
         );
-
         if (clienteExistenteId) {
           clienteIdFinal = clienteExistenteId;
         } else {
           const clienteIdCreado = await handleCreateClient();
-          if (!clienteIdCreado) return;
+          if (!clienteIdCreado) {
+            notifyError("No se puede crear un cliente");
+            return;
+          }
           clienteIdFinal = clienteIdCreado;
         }
-
         setClienteId(clienteIdFinal);
       }
 
       // Obtener el userId desde el token
       const usuarioId = getUserIdFromToken();
-      console.log("usuarioId:", usuarioId); // Depuración
-      console.log("clienteIdFinal:", clienteIdFinal); // Depuración
-      console.log("total:", total); // Depuración
-
-      // Validar campos obligatorios
-      if (!usuarioId || !clienteIdFinal) {
-        toast.error("Todos los campos son obligatorios.");
+      if (!usuarioId) {
+        notifyError("No se pudo obtener el ID del usuario.");
         return;
       }
 
@@ -243,11 +290,8 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       const productosInvalidos = productos.some(
         (producto) => !producto.productoId || producto.cantidad <= 0
       );
-
       if (productosInvalidos) {
-        toast.error(
-          "Todos los productos deben tener un ID y una cantidad válida."
-        );
+        notifyError("Todos los productos deben tener una cantidad válida.");
         return;
       }
 
@@ -300,13 +344,12 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         }
       }
 
-      toast.success("Venta y detalles creados exitosamente.");
+      notifySuccess("Venta y detalles creados exitosamente.");
 
       // Limpiar el formulario
       if (onSaleCreated) {
         onSaleCreated();
       }
-
       setUsuarioId("");
       setClienteId("");
       setProductos([{ productoId: 0, cantidad: 1 }]);
@@ -319,7 +362,20 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       });
     } catch (error) {
       console.error("Error en handleSubmit:", error); // Depuración
-      toast.error(error.message || "No se pudo crear la venta o los detalles.");
+      notifyError(error.message || "No se pudo crear la venta o los detalles.");
+    }
+  };
+
+  // Validación en tiempo real para la identificación
+  const handleIdentificacionChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = e.target.value;
+    setNewClient({ ...newClient, identificacion: value });
+
+    // Validar longitud mínima
+    if (value.length > 0 && value.length < 5) {
+      toast.error("La identificación debe tener al menos 5 caracteres.");
     }
   };
 

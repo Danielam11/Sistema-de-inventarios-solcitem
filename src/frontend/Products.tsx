@@ -34,13 +34,14 @@ interface Producto {
   precio_compra: number;
   precio_venta: number;
   cantidad: number;
-  marca_id: string;
-  modelo_id: string;
-  categoria_id: string;
+  marca_id?: string | null; // Opcional
+  modelo_id?: string | null; // Opcional
+  categoria_id?: string | null; // Opcional
+
   marca_nombre?: string;
   modelo_nombre?: string;
   categoria_nombre?: string;
-  proveedores?: string[];
+  proveedores?: string[] | null; // Opcional
 }
 
 interface Proveedor {
@@ -83,6 +84,28 @@ function createProducto(
     })
     .then(onSuccess)
     .catch(onError);
+}
+
+function notifySuccess(message: string) {
+  toast.success(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
+
+function notifyError(message: string) {
+  toast.error(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
 }
 
 function updateProducto(
@@ -294,6 +317,16 @@ export default function Products({
         : [],
     };
 
+    if (
+      !formattedProduct.nombre ||
+      !formattedProduct.descripcion ||
+      !formattedProduct.precio_venta ||
+      formattedProduct.cantidad < 0
+    ) {
+      notifyError("Ingrese todos los campos obligatorios.");
+      return;
+    }
+
     // 🛠️ Imprime el producto corregido antes de enviarlo al backend
     console.log("✅ Enviando al backend:", formattedProduct);
 
@@ -366,6 +399,16 @@ export default function Products({
         ? editingProducto.proveedores.map(Number) // Convertir a array de números
         : [],
     };
+    if (
+      !formattedProduct.nombre ||
+      !formattedProduct.descripcion ||
+      !formattedProduct.precio_compra ||
+      !formattedProduct.precio_venta ||
+      formattedProduct.cantidad < 0
+    ) {
+      notifyError("Ingrese todos los campos obligatorios.");
+      return;
+    }
 
     console.log("✅ Actualizando producto:", formattedProduct);
 
@@ -414,7 +457,7 @@ export default function Products({
           }}
         >
           <FormControl>
-            <FormLabel sx={{ fontSize: "0.8rem" }}>Nombre</FormLabel>
+            <FormLabel sx={{ fontSize: "0.8rem" }}>Nombre *</FormLabel>
             <Input
               name="nombre"
               value={newProducto.nombre}
@@ -445,7 +488,7 @@ export default function Products({
           </FormControl>
 
           <FormControl>
-            <FormLabel sx={{ fontSize: "0.8rem" }}>Precio Venta</FormLabel>
+            <FormLabel sx={{ fontSize: "0.8rem" }}>Precio Venta *</FormLabel>
             <Input
               name="precio_venta"
               type="number"
@@ -456,7 +499,7 @@ export default function Products({
           </FormControl>
 
           <FormControl>
-            <FormLabel sx={{ fontSize: "0.8rem" }}>Cantidad</FormLabel>
+            <FormLabel sx={{ fontSize: "0.8rem" }}>Cantidad *</FormLabel>
             <Input
               name="cantidad"
               type="number"
@@ -467,7 +510,7 @@ export default function Products({
           </FormControl>
 
           <FormControl>
-            <FormLabel sx={{ fontSize: "0.8rem" }}>Categoría</FormLabel>
+            <FormLabel sx={{ fontSize: "0.8rem" }}>Categoría *</FormLabel>
             <Select
               name="categoria_id"
               value={newProducto.categoria_id || ""}
