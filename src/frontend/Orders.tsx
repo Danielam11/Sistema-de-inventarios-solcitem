@@ -86,6 +86,64 @@ export default function OrderTable() {
       fetchOrderById(orderId, setOrderDetails);
     }
   };
+  function deletePedido(pedidoId: number) {
+    toast(
+      ({ closeToast }) => (
+        <div style={{ textAlign: "center" }}>
+          <p>¿Estás seguro de que deseas eliminar este pedido?</p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "1rem",
+              marginTop: "1rem",
+            }}
+          >
+            <button
+              onClick={() => {
+                fetch(`http://localhost:3000/api/orders/${pedidoId}`, {
+                  method: "DELETE",
+                })
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error("Error al eliminar el pedido");
+                    }
+                    return response.json();
+                  })
+                  .then(() => {
+                    toast.success("Pedido eliminado correctamente");
+                    setPedidosFiltrados((prevPedidos) =>
+                      prevPedidos.filter(
+                        (pedido) => pedido.pedido_id !== pedidoId
+                      )
+                    );
+                    setPedidosOriginales((prevPedidos) =>
+                      prevPedidos.filter(
+                        (pedido) => pedido.pedido_id !== pedidoId
+                      )
+                    );
+                    closeToast();
+                  })
+                  .catch((error) => {
+                    console.error("Error al eliminar el pedido:", error);
+                    toast.error("No se pudo eliminar el pedido");
+                    closeToast();
+                  });
+              }}
+            >
+              Confirmar
+            </button>
+            <button onClick={closeToast}>Cancelar</button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+      }
+    );
+  }
 
   const formatFecha = (fecha: string) => {
     const date = new Date(fecha);
@@ -206,7 +264,12 @@ export default function OrderTable() {
                         <MoreHorizRoundedIcon />
                       </MenuButton>
                       <Menu>
-                        <MenuItem color="danger">Eliminar</MenuItem>
+                        <MenuItem
+                          color="danger"
+                          onClick={() => deletePedido(pedido.pedido_id)}
+                        >
+                          Eliminar
+                        </MenuItem>
                       </Menu>
                     </Dropdown>
                   </td>
