@@ -280,14 +280,14 @@ export default function Sidebar() {
             </Toggler>
           </ListItem>
 
-          <ListItem sx={{ mb: 3 }}>
+          {/* <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="/cash">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Cash</Typography>
               </ListItemContent>
             </ListItemButton>
-          </ListItem>
+          </ListItem> */}
         </List>
       </Box>
       <Divider />

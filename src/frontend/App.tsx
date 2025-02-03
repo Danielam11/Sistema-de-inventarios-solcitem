@@ -1,7 +1,7 @@
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Box from "@mui/joy/Box";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Button from "@mui/joy/Button";
 import Breadcrumbs from "@mui/joy/Breadcrumbs";
 import Link from "@mui/joy/Link";
@@ -176,7 +176,7 @@ function MainContent() {
       </Box>
 
       <Routes>
-        <Route index element={<OrderTable />} />
+        <Route index element={<Navigate to="productos" />} />
         <Route
           path="clientes"
           element={
