@@ -22,6 +22,8 @@ import Option from "@mui/joy/Option";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import Typography from "@mui/joy/Typography";
+import { CSVLink } from "react-csv"; // Importar CSVLink
+import iconCSV from "../assets/microsoft-excel-2019.png"; // Importa la imagen
 
 // Función para obtener las ventas
 function fetchSales(setSales: (data: any[]) => void) {
@@ -575,9 +577,45 @@ export default function SalesTable() {
     setFilteredSales(filtered);
   };
 
+  const totalVentasFiltradas = filteredSales.reduce(
+    (sum, sale) => sum + parseFloat(sale.total || 0),
+    0
+  );
+  const formatFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    const dia = String(date.getDate()).padStart(2, "0");
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const anio = date.getFullYear();
+    const horas = String(date.getHours()).padStart(2, "0");
+    const minutos = String(date.getMinutes()).padStart(2, "0");
+    const segundos = String(date.getSeconds()).padStart(2, "0");
+
+    return `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`;
+  };
+  // Preparar los datos para exportar a CSV
+  const csvData = [
+    ...filteredSales.map((sale) => ({
+      Fecha: formatFecha(sale.fecha_venta),
+      Cliente: sale.cliente_nombre,
+      Usuario: sale.usuario_nombre,
+      Subtotal: `$${parseFloat(sale.subtotal).toFixed(2)}`,
+      Total: `$${parseFloat(sale.total).toFixed(2)}`,
+    })),
+    // Fila adicional para el total
+    {
+      Fecha: "",
+      Cliente: "",
+      Usuario: "",
+      Subtotal: "",
+      Total: `$${totalVentasFiltradas.toFixed(2)}`,
+    },
+  ];
+
   return (
     <React.Fragment>
-      <Box sx={{ display: "flex", gap: 1.5, padding: 2 }}>
+      <Box
+        sx={{ display: "flex", gap: 1.5, padding: 2, alignItems: "flex-end" }}
+      >
         <FormControl sx={{ flex: 1 }}>
           <FormLabel>Desde*</FormLabel>
           <Input
@@ -594,18 +632,34 @@ export default function SalesTable() {
             onChange={(e) => setToDate(e.target.value)}
           />
         </FormControl>
-        <Button
-          sx={{
-            height: "40px",
-            alignSelf: "flex-end",
-            padding: "5px 15px",
-            fontSize: "14px",
-          }}
-          onClick={filterSalesByDate}
-          startDecorator={<SearchIcon />}
-        >
-          Buscar{" "}
-        </Button>
+
+        {/* Contenedor del botón CSV con margen superior */}
+        <Box sx={{ marginTop: "16px" }}>
+          <CSVLink
+            data={csvData}
+            filename={"ventas.csv"}
+            style={{
+              textDecoration: "none",
+              padding: "8px 16px",
+              backgroundColor: "#008f39",
+              color: "white",
+              borderRadius: "4px",
+              maxHeight: "40px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <img
+              src={iconCSV}
+              alt="Exportar"
+              style={{
+                width: "20px",
+                height: "20px",
+              }}
+            />
+          </CSVLink>
+        </Box>
       </Box>
 
       {/* Modal de Edición */}

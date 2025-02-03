@@ -17,6 +17,9 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CSVLink } from "react-csv"; // Importar CSVLink
+import iconCSV from "../assets/microsoft-excel-2019.png"; // Importa la imagen
+import { Height } from "@mui/icons-material";
 
 function fetchPedidos(setPedidos: (data: any[]) => void) {
   fetch("http://localhost:3000/api/orders")
@@ -27,7 +30,6 @@ function fetchPedidos(setPedidos: (data: any[]) => void) {
     .catch((error) => console.error("Error fetching orders:", error));
 }
 
-// Función para obtener un pedido con sus detalles
 function fetchOrderById(orderId: number, setOrderDetails: (data: any) => void) {
   fetch(`http://localhost:3000/api/orders/${orderId}`)
     .then((response) => response.json())
@@ -52,7 +54,6 @@ export default function OrderTable() {
     });
   }, []);
 
-  // Filtrado de pedidos por fecha
   useEffect(() => {
     if (!fromDate || !toDate) {
       setPedidosFiltrados(pedidosOriginales);
@@ -71,7 +72,6 @@ export default function OrderTable() {
     setPedidosFiltrados(filtered);
   }, [fromDate, toDate, pedidosOriginales]);
 
-  // Calcular el total de los pedidos filtrados
   const totalPedidosFiltrados = pedidosFiltrados.reduce(
     (sum, pedido) => sum + parseFloat(pedido.total || 0),
     0
@@ -99,9 +99,28 @@ export default function OrderTable() {
     return `${dia}/${mes}/${anio}, ${horas}:${minutos}:${segundos}`;
   };
 
+  // Preparar los datos para exportar a CSV
+  const csvData = [
+    ...pedidosFiltrados.map((pedido) => ({
+      Fecha: formatFecha(pedido.fecha_pedido),
+      Proveedor: pedido.proveedor_nombre,
+      "Email Usuario": pedido.usuario_email,
+      Total: `$${parseFloat(pedido.total).toFixed(2)}`,
+    })),
+    // Fila adicional para el total
+    {
+      Fecha: "",
+      Proveedor: "",
+      "Email Usuario": "",
+      Total: `$${totalPedidosFiltrados.toFixed(2)}`,
+    },
+  ];
+
   return (
     <React.Fragment>
-      <Box sx={{ display: "flex", gap: 1.5, padding: 2 }}>
+      <Box
+        sx={{ display: "flex", gap: 1.5, padding: 2, alignItems: "flex-end" }}
+      >
         <FormControl sx={{ flex: 1 }}>
           <FormLabel>Desde*</FormLabel>
           <Input
@@ -118,8 +137,35 @@ export default function OrderTable() {
             onChange={(e) => setToDate(e.target.value)}
           />
         </FormControl>
-      </Box>
 
+        {/* Contenedor del botón CSV con margen arriba para bajarlo */}
+        <Box sx={{ marginTop: "16px" }}>
+          <CSVLink
+            data={csvData}
+            filename={"pedidos.csv"}
+            style={{
+              textDecoration: "none",
+              padding: "8px 16px",
+              backgroundColor: "#008f39",
+              color: "white",
+              borderRadius: "4px",
+              maxHeight: "40px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px", // Espacio entre el ícono y el texto
+            }}
+          >
+            <img
+              src={iconCSV} // Ruta de la imagen
+              alt="Exportar"
+              style={{
+                width: "20px",
+                height: "20px",
+              }}
+            />
+          </CSVLink>
+        </Box>
+      </Box>
       <Sheet sx={{ width: "100%", overflow: "auto", borderRadius: "sm" }}>
         <Table stickyHeader>
           <thead>
