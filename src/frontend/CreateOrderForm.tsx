@@ -13,7 +13,8 @@ import {
   Modal,
   Sheet,
 } from "@mui/joy";
-import { toast } from "react-toastify";
+
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { jwtDecode } from "jwt-decode";
 import SearchIcon from "@mui/icons-material/Search";
@@ -32,7 +33,27 @@ const getUserIdFromToken = () => {
 interface CreateOrderFormProps {
   onOrderCreated?: () => void;
 }
+function notifySuccess(message: string) {
+  toast.success(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
 
+function notifyError(message: string) {
+  toast.error(message, {
+    position: "top-right",
+    autoClose: 2000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+}
 export default function CreateOrderForm({
   onOrderCreated,
 }: CreateOrderFormProps) {
@@ -174,27 +195,33 @@ export default function CreateOrderForm({
   // Manejar el envío del formulario
   const handleSubmit = async () => {
     try {
-      // Obtener el userId desde el token
+      // Validar que el usuario esté autenticado
       const usuarioId = getUserIdFromToken();
-      console.log("usuarioId:", usuarioId); // Depuración
-      console.log("proveedorId:", proveedorId); // Depuración
-      console.log("total:", total); // Depuración
-
-      // Validar campos obligatorios
-      if (!usuarioId || !proveedorId) {
-        toast.error("Todos los campos son obligatorios.");
+      if (!usuarioId) {
+        notifyError(
+          "No se pudo obtener el ID del usuario. Inicia sesión nuevamente."
+        );
         return;
       }
 
-      // Validar productos
+      // Validar que se haya seleccionado un proveedor
+      if (!proveedorId) {
+        notifyError("Debes seleccionar un proveedor.");
+        return;
+      }
+
+      // Validar que haya al menos un producto en el pedido
+      if (productos.length === 0) {
+        notifyError("Debes agregar al menos un producto al pedido.");
+        return;
+      }
+
+      // Validar que todos los productos tengan un ID y una cantidad válida
       const productosInvalidos = productos.some(
         (producto) => !producto.productoId || producto.cantidad <= 0
       );
-
       if (productosInvalidos) {
-        toast.error(
-          "Todos los productos deben tener un ID y una cantidad válida."
-        );
+        notifyError("Debe seleccionar un producto y cantidad válida.");
         return;
       }
 
@@ -230,24 +257,22 @@ export default function CreateOrderForm({
       }
 
       // Pedido creado exitosamente
-      toast.success("Pedido y detalles creados exitosamente.");
+      notifySuccess("Pedido y detalles creados exitosamente.");
 
       // Limpiar el formulario
       if (onOrderCreated) {
         onOrderCreated();
       }
-
       setUsuarioId("");
       setProveedorId("");
       setProductos([{ productoId: 0, cantidad: 1 }]);
     } catch (error) {
       console.error("Error en handleSubmit:", error); // Depuración
-      toast.error(
+      notifyError(
         error.message || "No se pudo crear el pedido o los detalles."
       );
     }
   };
-
   return (
     <Box sx={{ padding: 1 }}>
       {/* Contenedor Proveedor */}
@@ -510,6 +535,7 @@ export default function CreateOrderForm({
           </Sheet>
         </Box>
       </Modal>
+      <ToastContainer />
     </Box>
   );
 }

@@ -284,7 +284,7 @@ export default function SuppliersTable({
 
     // Validaciones antes de enviar al servicio
     if (!identification || !name || !address || !phone || !email) {
-      notifyError("Todos los campos son obligatorios.");
+      notifyError("Ingrese todos los campos son obligatorios.");
       return;
     }
 
@@ -416,7 +416,7 @@ export default function SuppliersTable({
           {editingSupplier && (
             <Box sx={{ mt: 2 }}>
               <FormControl>
-                <FormLabel>Nombre</FormLabel>
+                <FormLabel>Nombre *</FormLabel>
                 <Input
                   value={editingSupplier.nombre}
                   onChange={(e) => {
@@ -428,7 +428,7 @@ export default function SuppliersTable({
                 />
               </FormControl>
               <FormControl>
-                <FormLabel sx={{ pt: 1 }}>Nro Documento</FormLabel>
+                <FormLabel sx={{ pt: 1 }}>Nro Documento *</FormLabel>
                 <Input
                   value={editingSupplier.identificacion}
                   onChange={(e) => {
@@ -464,7 +464,7 @@ export default function SuppliersTable({
                 />
               </FormControl>
               <FormControl>
-                <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
+                <FormLabel sx={{ pt: 1 }}>Teléfono *</FormLabel>
                 <Input
                   value={editingSupplier.telefono}
                   onChange={(e) => {
@@ -514,7 +514,7 @@ export default function SuppliersTable({
           <Typography component="h2">Añadir Nuevo Proveedor</Typography>
           <Box sx={{ mt: 2 }}>
             <FormControl>
-              <FormLabel>Identificación</FormLabel>
+              <FormLabel>Identificación *</FormLabel>
               <Input
                 name="identification"
                 value={newSupplier.identification}
@@ -522,7 +522,7 @@ export default function SuppliersTable({
               />
             </FormControl>
             <FormControl>
-              <FormLabel sx={{ pt: 1 }}>Nombre</FormLabel>
+              <FormLabel sx={{ pt: 1 }}>Nombre *</FormLabel>
               <Input
                 name="name"
                 value={newSupplier.name}
@@ -538,7 +538,7 @@ export default function SuppliersTable({
               />
             </FormControl>
             <FormControl>
-              <FormLabel sx={{ pt: 1 }}>Teléfono</FormLabel>
+              <FormLabel sx={{ pt: 1 }}>Teléfono *</FormLabel>
               <Input
                 name="phone"
                 value={newSupplier.phone}

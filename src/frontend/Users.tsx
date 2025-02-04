@@ -8,6 +8,7 @@ import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import { Select, Option } from "@mui/joy";
 import Menu from "@mui/joy/Menu";
 import MenuButton from "@mui/joy/MenuButton";
 import MenuItem from "@mui/joy/MenuItem";
@@ -20,7 +21,8 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
-import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 
 interface UsersProps {
   isCreateModalOpen: boolean;
@@ -117,14 +119,16 @@ function notifySuccess(message: string) {
 }
 
 function notifyError(message: string) {
-  toast.error(message, {
-    position: "top-right",
-    autoClose: 2000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  });
+  setTimeout(() => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }, 100); // Pequeño retraso para que React termine el renderizado
 }
 
 export default function Users({
@@ -213,6 +217,40 @@ export default function Users({
 
   const handleCreateSave = async () => {
     try {
+      const { email, password, rol } = newUsuario;
+
+      // Validar campos obligatorios
+      if (!email || !password || !rol) {
+        notifyError("Todos los campos son obligatorios.");
+        return;
+      }
+
+      // Validar formato del correo electrónico
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast.error("Por favor, ingresa un correo electrónico válido.");
+        return;
+      }
+
+      // Validar formato de la contraseña
+      const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        toast.error(
+          "La contraseña debe tener al menos 8 caracteres, incluyendo letras y números."
+        );
+        return;
+      }
+
+      // Validar rol permitido
+      const allowedRoles = ["administrador", "usuario"];
+      if (!allowedRoles.includes(rol)) {
+        toast.error(
+          "El rol seleccionado no es válido. Debe ingresar administrador o usuario"
+        );
+        return;
+      }
+
+      // Enviar la solicitud al backend
       const response = await fetch("http://localhost:3000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -225,7 +263,6 @@ export default function Users({
       }
 
       const { userId, message } = await response.json();
-
       const createdUsuario = {
         usuario_id: userId,
         email: newUsuario.email,
@@ -371,11 +408,16 @@ export default function Users({
             </FormControl>
             <FormControl>
               <FormLabel>Rol</FormLabel>
-              <Input
+              <Select
                 name="rol"
-                value={newUsuario.rol}
-                onChange={handleCreateChange}
-              />
+                value={newUsuario.rol || ""}
+                onChange={(e, value) =>
+                  setNewUsuario((prev) => ({ ...prev, rol: value || "" }))
+                }
+              >
+                <Option value="usuario">usuario</Option>
+                <Option value="administrador">administrador</Option>
+              </Select>
             </FormControl>
             <Box
               sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
@@ -445,6 +487,7 @@ export default function Users({
           )}
         </ModalDialog>
       </Modal>
+      <ToastContainer />
     </React.Fragment>
   );
 }

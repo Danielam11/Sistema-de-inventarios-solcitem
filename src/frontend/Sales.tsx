@@ -563,15 +563,20 @@ export default function SalesTable() {
       return;
     }
 
-    const fromDateTime = new Date(fromDate);
-    const toDateTime = new Date(toDate);
-
-    // Ajustar la fecha final al final del día (23:59:59)
-    toDateTime.setHours(23, 59, 59, 999);
+    // Convertir las fechas seleccionadas a formato YYYY-MM-DD
+    const fromDateFormatted = new Date(fromDate).toISOString().split("T")[0];
+    const toDateFormatted = new Date(toDate).toISOString().split("T")[0];
 
     const filtered = sales.filter((sale) => {
-      const saleDate = new Date(sale.fecha_venta);
-      return saleDate >= fromDateTime && saleDate <= toDateTime;
+      // Convertir la fecha de venta al mismo formato YYYY-MM-DD
+      const saleDateFormatted = new Date(sale.fecha_venta)
+        .toISOString()
+        .split("T")[0];
+
+      return (
+        saleDateFormatted >= fromDateFormatted &&
+        saleDateFormatted <= toDateFormatted
+      );
     });
 
     setFilteredSales(filtered);
@@ -592,6 +597,15 @@ export default function SalesTable() {
 
     return `${dia}/${mes}/${anio} ${horas}:${minutos}:${segundos}`;
   };
+
+  useEffect(() => {
+    if (fromDate && toDate) {
+      filterSalesByDate();
+    } else {
+      // Si no hay fechas seleccionadas, mostrar todas las ventas
+      setFilteredSales(sales);
+    }
+  }, [fromDate, toDate, sales]);
   // Preparar los datos para exportar a CSV
   const csvData = [
     ...filteredSales.map((sale) => ({
