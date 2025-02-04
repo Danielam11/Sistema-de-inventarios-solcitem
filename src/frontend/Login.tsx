@@ -62,7 +62,7 @@ export default function JoySignInSideTemplate() {
     const data = {
       email: formElements.email.value,
       password: formElements.password.value,
-      persistent: formElements.persistent.checked,
+       persistent: false,
     };
 
     try {
@@ -73,6 +73,8 @@ export default function JoySignInSideTemplate() {
         },
         body: JSON.stringify(data),
       });
+
+      console.log(response)
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -194,13 +196,13 @@ export default function JoySignInSideTemplate() {
             <form onSubmit={handleSubmit}>
           <FormControl required>
             <FormLabel>Usuario</FormLabel>
-            <Input type="email" name="email" />
+            <Input type="email" name="email" slotProps={{ input: { maxLength: 40 }}} />
           </FormControl>
           <FormControl required>
             <FormLabel>Contraseña</FormLabel>
-            <Input type="password" name="password" /> {/* Cambiado de "contrasena" a "password" */}
+            <Input type="password" name="password" slotProps={{ input: { maxLength: 40 }}} /> {/* Cambiado de "contrasena" a "password" */}
           </FormControl>
-          <Stack sx={{ gap: 4, mt: 2 }}>
+          <Stack sx={{ gap: 2, mt: 2 }}>
             <Box
               sx={{
                 display: 'flex',
@@ -208,7 +210,7 @@ export default function JoySignInSideTemplate() {
                 alignItems: 'center',
               }}
             >
-              <Checkbox size="sm" label="Recordar credenciales" name="persistent" />
+              {/* <Checkbox size="sm" label="Recordar credenciales" name="persistent" /> */}
               <Link level="title-sm" href="#replace-with-a-link">
                 {/* Forgot your password? */}
               </Link>
