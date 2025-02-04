@@ -81,14 +81,32 @@ export default function OrderTable() {
       return;
     }
 
-    const fromDateTime = new Date(fromDate);
-    const toDateTime = new Date(toDate);
-    toDateTime.setHours(23, 59, 59, 999);
+    // Convertir las fechas seleccionadas a formato YYYY-MM-DD
+    const fromDateFormatted = new Date(fromDate).toISOString().split("T")[0];
+    const toDateFormatted = new Date(toDate).toISOString().split("T")[0];
+
+    console.log(
+      "📆 Filtrando desde:",
+      fromDateFormatted,
+      " hasta:",
+      toDateFormatted
+    );
 
     const filtered = pedidosOriginales.filter((pedido) => {
-      const orderDate = new Date(pedido.fecha_pedido);
-      return orderDate >= fromDateTime && orderDate <= toDateTime;
+      // Convertir fecha_pedido a formato YYYY-MM-DD
+      const orderDateFormatted = new Date(pedido.fecha_pedido)
+        .toISOString()
+        .split("T")[0];
+
+      console.log("➡️ Pedido con fecha:", orderDateFormatted);
+
+      return (
+        orderDateFormatted >= fromDateFormatted &&
+        orderDateFormatted <= toDateFormatted
+      );
     });
+
+    console.log("✅ Pedidos filtrados:", filtered);
 
     setPedidosFiltrados(filtered);
   }, [fromDate, toDate, pedidosOriginales]);
@@ -147,7 +165,7 @@ export default function OrderTable() {
                   })
                   .catch((error) => {
                     console.error("Error al eliminar el pedido:", error);
-                    toast.error("No se pudo eliminar el pedido");
+                    notifyError("No se pudo eliminar el pedido");
                     closeToast();
                   });
               }}

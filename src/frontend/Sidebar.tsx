@@ -37,21 +37,17 @@ import { closeSidebar } from "./utils.ts";
 import { jwtDecode } from "jwt-decode";
 
 const getUserDataFromToken = () => {
-  const token = localStorage.getItem("token"); // Obtener el token guardado
+  const token = localStorage.getItem("token"); // Obtener token
   if (!token) {
-    console.error("No hay token disponible");
     return null;
   }
 
   try {
-    const decodedToken = jwtDecode(token); // Decodificar el token
-    console.log("Token decodificado:", decodedToken);
-    console.log("User ID:", decodedToken.userId);
-    console.log("Email:", decodedToken.email);
-
+    const decodedToken = jwtDecode(token);
     return {
-      userId: decodedToken.userId, // Extrae el ID del usuario
-      email: decodedToken.email, // Extrae el email del usuario
+      userId: decodedToken.userId,
+      email: decodedToken.email,
+      rol: decodedToken.rol, // 🛑 Extraer el rol del usuario
     };
   } catch (error) {
     console.error("Error al decodificar el token", error);
@@ -96,6 +92,7 @@ function Toggler({
 export default function Sidebar() {
   const userData = getUserDataFromToken(); // Obtener datos del usuario
   const userEmail = userData ? userData.email : "Email no disponible";
+  const userRole = userData ? userData.rol : "usuario"; // 🛑 Rol del usuario
   return (
     <Sheet
       className="Sidebar"
@@ -207,6 +204,15 @@ export default function Sidebar() {
           </ListItem>
 
           <ListItem sx={{ mb: 3 }}>
+            <ListItemButton component={Link} to="proveedores">
+              <PeopleAltIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Proveedores</Typography>
+              </ListItemContent>
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem sx={{ mb: 3 }}>
             <ListItemButton component={Link} to="crearventas">
               <ShoppingCartRoundedIcon />
               <ListItemContent>
@@ -220,15 +226,6 @@ export default function Sidebar() {
               <LocalShippingIcon />
               <ListItemContent>
                 <Typography level="title-sm">Pedidos</Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem sx={{ mb: 3 }}>
-            <ListItemButton component={Link} to="proveedores">
-              <PeopleAltIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Proveedores</Typography>
               </ListItemContent>
             </ListItemButton>
           </ListItem>
@@ -266,42 +263,35 @@ export default function Sidebar() {
             </Toggler>
           </ListItem>
 
-          <ListItem nested>
-            <Toggler
-              renderToggle={({ open, setOpen }) => (
-                <ListItemButton onClick={() => setOpen(!open)}>
-                  <GroupRoundedIcon />
-                  <ListItemContent>
-                    <Typography level="title-sm">Usuarios</Typography>
-                  </ListItemContent>
-                  <KeyboardArrowDownIcon
-                    sx={[
-                      open
-                        ? { transform: "rotate(180deg)" }
-                        : { transform: "none" },
-                    ]}
-                  />
-                </ListItemButton>
-              )}
-            >
-              <List sx={{ gap: 0.5, mb: 3 }}>
-                <ListItem sx={{ mb: 0 }}>
-                  <ListItemButton component={Link} to="users">
-                    Crear Nuevo Usuario
+          {userRole === "administrador" && (
+            <ListItem nested>
+              <Toggler
+                renderToggle={({ open, setOpen }) => (
+                  <ListItemButton onClick={() => setOpen(!open)}>
+                    <GroupRoundedIcon />
+                    <ListItemContent>
+                      <Typography level="title-sm">Usuarios</Typography>
+                    </ListItemContent>
+                    <KeyboardArrowDownIcon
+                      sx={[
+                        open
+                          ? { transform: "rotate(180deg)" }
+                          : { transform: "none" },
+                      ]}
+                    />
                   </ListItemButton>
-                </ListItem>
-              </List>
-            </Toggler>
-          </ListItem>
-
-          {/* <ListItem sx={{ mb: 3 }}>
-            <ListItemButton component={Link} to="/cash">
-              <ShoppingCartRoundedIcon />
-              <ListItemContent>
-                <Typography level="title-sm">Cash</Typography>
-              </ListItemContent>
-            </ListItemButton>
-          </ListItem> */}
+                )}
+              >
+                <List sx={{ gap: 0.5, mb: 3 }}>
+                  <ListItem sx={{ mb: 0 }}>
+                    <ListItemButton component={Link} to="users">
+                      Crear Nuevo Usuario
+                    </ListItemButton>
+                  </ListItem>
+                </List>
+              </Toggler>
+            </ListItem>
+          )}
         </List>
       </Box>
       <Divider />

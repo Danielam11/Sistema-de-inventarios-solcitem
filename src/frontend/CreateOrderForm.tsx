@@ -13,7 +13,8 @@ import {
   Modal,
   Sheet,
 } from "@mui/joy";
-import { toast } from "react-toastify";
+
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { jwtDecode } from "jwt-decode";
 import SearchIcon from "@mui/icons-material/Search";
@@ -221,20 +222,6 @@ export default function CreateOrderForm({
       );
       if (productosInvalidos) {
         notifyError("Debe seleccionar un producto y cantidad válida.");
-        return;
-      }
-
-      // Validar que cada producto tenga suficiente stock (opcional)
-      const productosSinStock = productos.some((producto) => {
-        const selectedProduct = products.find(
-          (p) => p.producto_id === producto.productoId
-        );
-        return selectedProduct && producto.cantidad > selectedProduct.cantidad;
-      });
-      if (productosSinStock) {
-        notifyError(
-          "Uno o más productos no tienen suficiente stock disponible."
-        );
         return;
       }
 
@@ -548,6 +535,7 @@ export default function CreateOrderForm({
           </Sheet>
         </Box>
       </Modal>
+      <ToastContainer />
     </Box>
   );
 }

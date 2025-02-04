@@ -383,6 +383,38 @@ export default function Products({
       descripcion.includes(searchTerm.toLowerCase())
     );
   });
+
+  const handleEditClick = (producto: Producto) => {
+    // Buscar los IDs correspondientes a los nombres
+    const marcaEncontrada = marcas.find(
+      (m) => m.nombre === producto.marca_nombre
+    );
+    const modeloEncontrado = modelos.find(
+      (m) => m.nombre === producto.modelo_nombre
+    );
+    const categoriaEncontrada = categorias.find(
+      (c) => c.nombre === producto.categoria_nombre
+    );
+
+    // Convertir los nombres de proveedores en IDs
+    const proveedoresEncontrados =
+      producto.proveedores?.map((nombreProveedor) => {
+        const proveedor = proveedores.find((p) => p.nombre === nombreProveedor);
+        return proveedor ? proveedor.proveedor_id : "";
+      }) || [];
+
+    // Establecer el producto en edición con los IDs correctos
+    setEditingProducto({
+      ...producto,
+      marca_id: marcaEncontrada ? marcaEncontrada.marca_id : "",
+      modelo_id: modeloEncontrado ? modeloEncontrado.modelo_id : "",
+      categoria_id: categoriaEncontrada ? categoriaEncontrada.categoria_id : "",
+      proveedores: proveedoresEncontrados, // Aquí se asignan los IDs de los proveedores
+    });
+
+    setIsEditModalOpen(true);
+  };
+
   const handleEditSave = () => {
     if (!editingProducto) return;
 
@@ -399,6 +431,8 @@ export default function Products({
         ? editingProducto.proveedores.map(Number) // Convertir a array de números
         : [],
     };
+
+    console.log("Producto seleccionado para editar:", editingProducto);
     if (
       !formattedProduct.nombre ||
       !formattedProduct.descripcion ||
@@ -421,7 +455,7 @@ export default function Products({
             p.producto_id === updatedProducto.producto_id ? updatedProducto : p
           )
         );
-        toast.success("Producto actualizado exitosamente.");
+        notifySuccess("Producto actualizado exitosamente.");
         fetchData("products", setProductos); // Recargar lista de productos
         setIsEditModalOpen(false);
         setEditingProducto(null);
@@ -768,12 +802,7 @@ export default function Products({
                         <MoreHorizRoundedIcon />
                       </MenuButton>
                       <Menu>
-                        <MenuItem
-                          onClick={() => {
-                            setEditingProducto(producto);
-                            setIsEditModalOpen(true);
-                          }}
-                        >
+                        <MenuItem onClick={() => handleEditClick(producto)}>
                           Editar
                         </MenuItem>
                         <MenuItem

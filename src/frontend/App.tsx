@@ -25,6 +25,31 @@ import Sales from "./Sales";
 import CreateSaleForm from "./CreateSaleForm";
 import CreateOrderForm from "./CreateOrderForm";
 
+import { jwtDecode } from "jwt-decode";
+
+const getUserDataFromToken = () => {
+  const token = localStorage.getItem("token"); // Obtener el token guardado
+  if (!token) {
+    console.error("No hay token disponible");
+    return null;
+  }
+
+  try {
+    const decodedToken = jwtDecode(token); // Decodificar el token
+    console.log("Token decodificado:", decodedToken);
+    console.log("User ID:", decodedToken.userId);
+    console.log("Email:", decodedToken.email);
+    console.log("rol:", decodedToken.rol);
+
+    return {
+      rol: decodedToken.rol,
+    };
+  } catch (error) {
+    console.error("Error al decodificar el token", error);
+    return null;
+  }
+};
+
 interface RouteDetails {
   [key: string]: {
     title: string;
@@ -37,6 +62,10 @@ function MainContent() {
   const location = useLocation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // Obtener el rol del usuario
+  const userData = getUserDataFromToken();
+  const userRole = userData?.rol || "usuario"; // Si no hay rol, asumir "usuario"
+
   const routeDetails: RouteDetails = {
     "/dashboard/sales": {
       title: "Sales",
@@ -45,13 +74,7 @@ function MainContent() {
     },
     "/dashboard/clientes": {
       title: "Clientes",
-
       breadcrumb: ["Dashboard", "Clientes"],
-    },
-    "/dashboard/users": {
-      title: "Usuarios",
-      buttonText: "Añadir nuevo Usuario",
-      breadcrumb: ["Dashboard", "Usuarios"],
     },
     "/dashboard/proveedores": {
       title: "Proveedores",
@@ -60,12 +83,10 @@ function MainContent() {
     },
     "/dashboard/productos": {
       title: "Productos",
-
       breadcrumb: ["Dashboard", "productos"],
     },
     "/dashboard/pedidos": {
       title: "Pedidos",
-
       breadcrumb: ["Dashboard", "Reportes", "Pedidos"],
     },
     "/dashboard/ventas": {
@@ -81,6 +102,15 @@ function MainContent() {
       breadcrumb: ["Dashboard", "Pedidos"],
     },
   };
+
+  // Solo añadir la ruta de usuarios si el rol es "administrador"
+  if (userRole === "administrador") {
+    routeDetails["/dashboard/users"] = {
+      title: "Usuarios",
+      buttonText: "Añadir nuevo Usuario",
+      breadcrumb: ["Dashboard", "Usuarios"],
+    };
+  }
 
   const currentRoute = routeDetails[location.pathname] || {
     title: "Page",
@@ -188,15 +218,20 @@ function MainContent() {
           }
         />
         <Route path="sales" element={<OrderTable />} />
-        <Route
-          path="users"
-          element={
-            <Users
-              isCreateModalOpen={isCreateModalOpen}
-              setIsCreateModalOpen={setIsCreateModalOpen}
-            />
-          }
-        />
+        {/* Proteger la ruta de usuarios */}
+        {userRole === "administrador" ? (
+          <Route
+            path="users"
+            element={
+              <Users
+                isCreateModalOpen={isCreateModalOpen}
+                setIsCreateModalOpen={setIsCreateModalOpen}
+              />
+            }
+          />
+        ) : (
+          <Route path="users" element={<CreateOrderForm />} />
+        )}
         <Route
           path="proveedores"
           element={
@@ -232,17 +267,16 @@ export default function App() {
         <Header />
         <Sidebar />
         <MainContent />
-        {/* Agregar ToastContainer aquí */}
         <ToastContainer
-          position="top-right" // Posición del toast
-          autoClose={3000} // Tiempo de autocierre en milisegundos
-          hideProgressBar={false} // Mostrar barra de progreso
-          newestOnTop={false} // Los nuevos toasts aparecen arriba
-          closeOnClick // Cerrar al hacer clic
-          rtl={false} // Dirección del texto
-          pauseOnFocusLoss // Pausar cuando pierde foco
-          draggable // Permitir arrastrar
-          pauseOnHover // Pausar al pasar el mouse
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
         />
       </Box>
     </CssVarsProvider>

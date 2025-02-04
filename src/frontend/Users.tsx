@@ -8,6 +8,7 @@ import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
 import Table from "@mui/joy/Table";
 import Sheet from "@mui/joy/Sheet";
+import { Select, Option } from "@mui/joy";
 import Menu from "@mui/joy/Menu";
 import MenuButton from "@mui/joy/MenuButton";
 import MenuItem from "@mui/joy/MenuItem";
@@ -21,7 +22,7 @@ import KeyboardArrowLeftIcon from "@mui/icons-material/KeyboardArrowLeft";
 import Modal from "@mui/joy/Modal";
 import ModalDialog from "@mui/joy/ModalDialog";
 import "react-toastify/dist/ReactToastify.css";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 interface UsersProps {
   isCreateModalOpen: boolean;
@@ -118,14 +119,16 @@ function notifySuccess(message: string) {
 }
 
 function notifyError(message: string) {
-  toast.error(message, {
-    position: "top-right",
-    autoClose: 2000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-  });
+  setTimeout(() => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+  }, 100); // Pequeño retraso para que React termine el renderizado
 }
 
 export default function Users({
@@ -214,11 +217,11 @@ export default function Users({
 
   const handleCreateSave = async () => {
     try {
-      const { email, password, nombre_completo, rol } = newUsuario;
+      const { email, password, rol } = newUsuario;
 
       // Validar campos obligatorios
-      if (!email || !password || !nombre_completo || !rol) {
-        toast.error("Todos los campos son obligatorios.");
+      if (!email || !password || !rol) {
+        notifyError("Todos los campos son obligatorios.");
         return;
       }
 
@@ -238,17 +241,12 @@ export default function Users({
         return;
       }
 
-      // Validar formato del nombre completo
-      const nameRegex = /^[a-zA-Z\sáéíóúÁÉÍÓÚñÑ]+$/;
-      if (!nameRegex.test(nombre_completo)) {
-        toast.error("El nombre solo puede contener letras y espacios.");
-        return;
-      }
-
       // Validar rol permitido
-      const allowedRoles = ["admin", "user"];
+      const allowedRoles = ["administrador", "usuario"];
       if (!allowedRoles.includes(rol)) {
-        toast.error("El rol seleccionado no es válido.");
+        toast.error(
+          "El rol seleccionado no es válido. Debe ingresar administrador o usuario"
+        );
         return;
       }
 
@@ -410,11 +408,16 @@ export default function Users({
             </FormControl>
             <FormControl>
               <FormLabel>Rol</FormLabel>
-              <Input
+              <Select
                 name="rol"
-                value={newUsuario.rol}
-                onChange={handleCreateChange}
-              />
+                value={newUsuario.rol || ""}
+                onChange={(e, value) =>
+                  setNewUsuario((prev) => ({ ...prev, rol: value || "" }))
+                }
+              >
+                <Option value="usuario">usuario</Option>
+                <Option value="administrador">administrador</Option>
+              </Select>
             </FormControl>
             <Box
               sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}
@@ -484,6 +487,7 @@ export default function Users({
           )}
         </ModalDialog>
       </Modal>
+      <ToastContainer />
     </React.Fragment>
   );
 }
