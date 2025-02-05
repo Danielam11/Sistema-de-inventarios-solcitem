@@ -15,8 +15,10 @@ import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-toastify';
 import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
@@ -74,22 +76,21 @@ export default function JoySignInSideTemplate() {
         body: JSON.stringify(data),
       });
 
-      console.log(response)
-
       if (!response.ok) {
         const errorData = await response.json();
-        alert(errorData.message);
+        toast.error("Este es un mensaje de prueba");
+        
         return;
       }
 
       const responseData = await response.json();
       localStorage.setItem('token', responseData.token); // Guarda el token de autenticación
 
-      alert('Inicio de sesión exitoso');
+      
       navigate('/dashboard'); // Redirige al Dashboard después de iniciar sesión
     } catch (error) {
       console.error('Error en la autenticación:', error);
-      alert('Error en el servidor, por favor intenta más tarde.');
+      toast.error("Ingreso fallido");
     }
   };
 
@@ -253,6 +254,7 @@ export default function JoySignInSideTemplate() {
           },
         })}
       />
+       <ToastContainer />
     </CssVarsProvider>
   );
 }
