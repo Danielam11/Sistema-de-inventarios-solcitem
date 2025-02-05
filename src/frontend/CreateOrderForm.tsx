@@ -374,6 +374,12 @@ export default function CreateOrderForm({
                         size="sm"
                         type="number"
                         value={producto.cantidad}
+                        slotProps={{
+                          input: {
+                            min: 0,
+                            max: 100,
+                          },
+                        }}
                         onChange={(e) =>
                           handleProductChange(index, "cantidad", e.target.value)
                         }

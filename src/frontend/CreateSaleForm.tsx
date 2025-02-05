@@ -406,11 +406,11 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         </Typography>
         <Grid container spacing={3}>
           {[
-            { label: "Identificación *", key: "identificacion" },
-            { label: "Nombre Completo *", key: "nombre" },
-            { label: "Dirección", key: "direccion" },
-            { label: "Teléfono *", key: "telefono" },
-          ].map(({ label, key }) => (
+            { label: "Identificación *", key: "identificacion",maxLength: 13 },
+            { label: "Nombre Completo *", key: "nombre",maxLength: 40 },
+            { label: "Dirección", key: "direccion",maxLength: 40 },
+            { label: "Teléfono *", key: "telefono",maxLength: 10 },
+          ].map(({ label, key,maxLength }) => (
             <Grid item xs={12} sm={6} md={3} key={key}>
               <FormControl fullWidth>
                 <FormLabel sx={{ fontSize: "0.875rem" }}>{label}</FormLabel>
@@ -420,6 +420,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                   onChange={(e) =>
                     setNewClient({ ...newClient, [key]: e.target.value })
                   }
+                  slotProps={{ input: { maxLength } }}
                 />
               </FormControl>
             </Grid>
@@ -434,6 +435,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                 onChange={(e) =>
                   setNewClient({ ...newClient, email: e.target.value })
                 }
+                slotProps={{ input: { maxLength: 30 } }}
               />
             </FormControl>
           </Grid>
@@ -514,6 +516,12 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                       <Input
                         size="sm"
                         type="number"
+                        slotProps={{
+                          input: {
+                            min: 0,
+                            max: 100,
+                          },
+                        }}
                         value={producto.cantidad}
                         onChange={(e) =>
                           handleProductChange(index, "cantidad", e.target.value)

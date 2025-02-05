@@ -395,6 +395,7 @@ export default function Users({
                 name="email"
                 value={newUsuario.email}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 40 } }}
               />
             </FormControl>
             <FormControl>
@@ -404,6 +405,7 @@ export default function Users({
                 type="password"
                 value={newUsuario.password}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 40 } }}
               />
             </FormControl>
             <FormControl>

@@ -160,11 +160,11 @@ export default function Sidebar() {
         <Typography level="title-lg">Solcitem</Typography>
         <ColorSchemeToggle sx={{ ml: "auto" }} />
       </Box>
-      <Input
+      {/* <Input
         size="sm"
         startDecorator={<SearchRoundedIcon />}
         placeholder="Buscar"
-      />
+      /> */}
       <Box
         sx={{
           minHeight: 0,

@@ -811,6 +811,7 @@ export default function SalesTable() {
             <FormControl>
               <FormLabel>Identificación</FormLabel>
               <Input
+                slotProps={{ input: { maxLength: 13 }}}
                 value={newClient.identificacion}
                 onChange={(e) =>
                   setNewClient({ ...newClient, identificacion: e.target.value })

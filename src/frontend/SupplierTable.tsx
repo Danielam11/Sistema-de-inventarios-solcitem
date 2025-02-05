@@ -419,6 +419,7 @@ export default function SuppliersTable({
                 <FormLabel>Nombre *</FormLabel>
                 <Input
                   value={editingSupplier.nombre}
+                  slotProps={{ input: { maxLength: 40 } }}
                   onChange={(e) => {
                     const nombre = e.target.value;
                     if (nombre.length <= 255) {
@@ -431,6 +432,7 @@ export default function SuppliersTable({
                 <FormLabel sx={{ pt: 1 }}>Nro Documento *</FormLabel>
                 <Input
                   value={editingSupplier.identificacion}
+                  slotProps={{ input: { maxLength: 13 } }}
                   onChange={(e) => {
                     const identificacion = e.target.value;
                     if (identificacion.length <= 255) {
@@ -446,6 +448,7 @@ export default function SuppliersTable({
                 <FormLabel sx={{ pt: 1 }}>Email</FormLabel>
                 <Input
                   value={editingSupplier.email}
+                  slotProps={{ input: { maxLength: 40 } }}
                   onChange={(e) => {
                     const email = e.target.value;
                     if (email.length <= 255) {
@@ -467,6 +470,7 @@ export default function SuppliersTable({
                 <FormLabel sx={{ pt: 1 }}>Teléfono *</FormLabel>
                 <Input
                   value={editingSupplier.telefono}
+                  slotProps={{ input: { maxLength: 10 } }}
                   onChange={(e) => {
                     const telefono = e.target.value;
                     if (/^\d*$/.test(telefono) && telefono.length <= 10) {
@@ -482,6 +486,7 @@ export default function SuppliersTable({
                 <FormLabel sx={{ pt: 1 }}>Dirección</FormLabel>
                 <Input
                   value={editingSupplier.direccion}
+                  slotProps={{ input: { maxLength: 40 } }}
                   onChange={(e) => {
                     const direccion = e.target.value;
                     if (direccion.length <= 255) {
@@ -519,6 +524,7 @@ export default function SuppliersTable({
                 name="identification"
                 value={newSupplier.identification}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 13 } }}
               />
             </FormControl>
             <FormControl>
@@ -527,6 +533,7 @@ export default function SuppliersTable({
                 name="name"
                 value={newSupplier.name}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 40 } }}
               />
             </FormControl>
             <FormControl>
@@ -535,6 +542,7 @@ export default function SuppliersTable({
                 name="address"
                 value={newSupplier.address}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 40 } }}
               />
             </FormControl>
             <FormControl>
@@ -543,6 +551,7 @@ export default function SuppliersTable({
                 name="phone"
                 value={newSupplier.phone}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 10 } }}
               />
             </FormControl>
             <FormControl>
@@ -551,6 +560,7 @@ export default function SuppliersTable({
                 name="email"
                 value={newSupplier.email}
                 onChange={handleCreateChange}
+                slotProps={{ input: { maxLength: 40 } }}
               />
             </FormControl>
             <Box
