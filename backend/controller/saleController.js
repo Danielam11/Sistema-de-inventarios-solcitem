@@ -2,7 +2,7 @@ const salesModel = require("../model/saleModel");
 
 // Crear una nueva venta
 function createSale(req, res) {
-  const { clienteId, total, subtotal } = req.body; // Ya no recibimos usuarioId desde el body
+  const { clienteId, total, subtotal, medioPago } = req.body; // Agregado medioPago
   const usuarioId = req.user.userId; // Obtener el usuarioId desde el token
 
   // Validar que el clienteId sea un número válido
@@ -10,8 +10,13 @@ function createSale(req, res) {
     return res.status(400).json({ error: "El ID de cliente no es válido." });
   }
 
+  // Validar medio de pago
+  if (!["TRANSFERENCIA", "EFECTIVO"].includes(medioPago)) {
+    return res.status(400).json({ error: "Medio de pago inválido. Use 'TRANSFERENCIA' o 'EFECTIVO'." });
+  }
+
   salesModel
-    .createSale(clienteId, usuarioId, total, subtotal)
+    .createSale(clienteId, usuarioId, total, subtotal, medioPago)
     .then((sale) => {
       res.status(201).json({
         message: "Venta creada exitosamente",
@@ -23,6 +28,7 @@ function createSale(req, res) {
       res.status(500).json({ error: "Error al crear la venta" });
     });
 }
+
 // Obtener todas las ventas
 function getAllSales(req, res) {
   salesModel
@@ -72,10 +78,15 @@ function deleteSale(req, res) {
 // Actualizar una venta existente
 function updateSale(req, res) {
   const { id } = req.params;
-  const { fecha_venta, clienteId, usuarioId, total, subtotal } = req.body; // Cambiado a fecha_venta
+  const { fecha_venta, clienteId, usuarioId, total, subtotal, medioPago } = req.body; // Agregado medioPago
+
+  // Validar medio de pago si está presente en la solicitud
+  if (medioPago && !["TRANSFERENCIA", "EFECTIVO"].includes(medioPago)) {
+    return res.status(400).json({ error: "Medio de pago inválido. Use 'TRANSFERENCIA' o 'EFECTIVO'." });
+  }
 
   salesModel
-    .updateSale(id, fecha_venta, clienteId, usuarioId, total, subtotal) // Cambiado a fecha_venta
+    .updateSale(id, fecha_venta, clienteId, usuarioId, total, subtotal, medioPago) // Agregado medioPago
     .then((sale) => {
       res.status(200).json({
         message: "Venta actualizada exitosamente",

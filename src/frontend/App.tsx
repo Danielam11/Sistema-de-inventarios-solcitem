@@ -24,7 +24,7 @@ import Orders from "./Orders";
 import Sales from "./Sales";
 import CreateSaleForm from "./CreateSaleForm";
 import CreateOrderForm from "./CreateOrderForm";
-
+import Cash from "./Cash";
 import { jwtDecode } from "jwt-decode";
 
 const getUserDataFromToken = () => {
@@ -100,6 +100,10 @@ function MainContent() {
     "/dashboard/crearpedidos": {
       title: "Nuevo Pedido",
       breadcrumb: ["Dashboard", "Pedidos"],
+    },
+    "/dashboard/caja": {
+      title: "Caja",
+      breadcrumb: ["Dashboard", "Caja"],
     },
   };
 
@@ -254,6 +258,7 @@ function MainContent() {
         <Route path="ventas" element={<Sales />} />
         <Route path="crearventas" element={<CreateSaleForm />} />
         <Route path="crearpedidos" element={<CreateOrderForm />} />
+        <Route path="caja" element={<Cash />} />
       </Routes>
     </Box>
   );

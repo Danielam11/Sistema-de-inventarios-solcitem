@@ -47,7 +47,7 @@ const getUserDataFromToken = () => {
     return {
       userId: decodedToken.userId,
       email: decodedToken.email,
-      rol: decodedToken.rol, // 🛑 Extraer el rol del usuario
+      rol: decodedToken.rol, //
     };
   } catch (error) {
     console.error("Error al decodificar el token", error);
@@ -261,6 +261,15 @@ export default function Sidebar() {
                 </ListItem>
               </List>
             </Toggler>
+          </ListItem>
+
+          <ListItem sx={{ mb: 3 }}>
+            <ListItemButton component={Link} to="caja">
+              <ShoppingCartRoundedIcon />
+              <ListItemContent>
+                <Typography level="title-sm">Caja</Typography>
+              </ListItemContent>
+            </ListItemButton>
           </ListItem>
 
           {userRole === "administrador" && (

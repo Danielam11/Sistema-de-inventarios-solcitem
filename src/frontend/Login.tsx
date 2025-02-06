@@ -1,24 +1,24 @@
-import * as React from 'react';
-import { CssVarsProvider, extendTheme, useColorScheme } from '@mui/joy/styles';
-import GlobalStyles from '@mui/joy/GlobalStyles';
-import CssBaseline from '@mui/joy/CssBaseline';
-import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Checkbox from '@mui/joy/Checkbox';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import IconButton, { IconButtonProps } from '@mui/joy/IconButton';
-import Link from '@mui/joy/Link';
-import Input from '@mui/joy/Input';
-import Typography from '@mui/joy/Typography';
-import Stack from '@mui/joy/Stack';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import logo from './img/LOGO-HORIZONTAL-SOLTICEM.png';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import * as React from "react";
+import { CssVarsProvider, extendTheme, useColorScheme } from "@mui/joy/styles";
+import GlobalStyles from "@mui/joy/GlobalStyles";
+import CssBaseline from "@mui/joy/CssBaseline";
+import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
+import Checkbox from "@mui/joy/Checkbox";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import IconButton, { IconButtonProps } from "@mui/joy/IconButton";
+import Link from "@mui/joy/Link";
+import Input from "@mui/joy/Input";
+import Typography from "@mui/joy/Typography";
+import Stack from "@mui/joy/Stack";
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import logo from "./img/LOGO-HORIZONTAL-SOLTICEM.png";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface FormElements extends HTMLFormControlsCollection {
   email: HTMLInputElement;
@@ -43,17 +43,19 @@ function ColorSchemeToggle(props: IconButtonProps) {
       variant="outlined"
       disabled={!mounted}
       onClick={(event) => {
-        setMode(mode === 'light' ? 'dark' : 'light');
+        setMode(mode === "light" ? "dark" : "light");
         onClick?.(event);
       }}
       {...other}
     >
-      {mode === 'light' ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
+      {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
     </IconButton>
   );
 }
 
-const customTheme = extendTheme({ colorSchemes: { dark: { palette: { mode: 'dark' } } } });
+const customTheme = extendTheme({
+  colorSchemes: { dark: { palette: { mode: "dark" } } },
+});
 
 export default function JoySignInSideTemplate() {
   const navigate = useNavigate(); // Hook para manejar la navegación
@@ -64,32 +66,31 @@ export default function JoySignInSideTemplate() {
     const data = {
       email: formElements.email.value,
       password: formElements.password.value,
-       persistent: false,
+      persistent: false,
     };
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:3000/api/users/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        toast.error("Este es un mensaje de prueba");
-        
+        toast.error("Credenciales incorrectas");
+
         return;
       }
 
       const responseData = await response.json();
-      localStorage.setItem('token', responseData.token); // Guarda el token de autenticación
+      localStorage.setItem("token", responseData.token); // Guarda el token de autenticación
 
-      
-      navigate('/dashboard'); // Redirige al Dashboard después de iniciar sesión
+      navigate("/dashboard"); // Redirige al Dashboard después de iniciar sesión
     } catch (error) {
-      console.error('Error en la autenticación:', error);
+      console.error("Error en la autenticación:", error);
       toast.error("Ingreso fallido");
     }
   };
@@ -99,86 +100,90 @@ export default function JoySignInSideTemplate() {
       <CssBaseline />
       <GlobalStyles
         styles={{
-          ':root': {
-            '--Form-maxWidth': '800px',
-            '--Transition-duration': '0.4s',
+          ":root": {
+            "--Form-maxWidth": "800px",
+            "--Transition-duration": "0.4s",
           },
         }}
       />
       <Box
         sx={(theme) => ({
-          width: { xs: '100%', md: '50vw' },
-          transition: 'width var(--Transition-duration)',
-          transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
-          position: 'relative',
+          width: { xs: "100%", md: "50vw" },
+          transition: "width var(--Transition-duration)",
+          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+          position: "relative",
           zIndex: 1,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          backdropFilter: 'blur(12px)',
-          backgroundColor: 'rgba(255 255 255 / 0.2)',
-          [theme.getColorSchemeSelector('dark')]: {
-            backgroundColor: 'rgba(19 19 24 / 0.4)',
+          display: "flex",
+          justifyContent: "flex-end",
+          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(255 255 255 / 0.2)",
+          [theme.getColorSchemeSelector("dark")]: {
+            backgroundColor: "rgba(19 19 24 / 0.4)",
           },
         })}
       >
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '100dvh',
-            width: '100%',
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100dvh",
+            width: "100%",
             px: 2,
           }}
         >
           <Box
-          component="header"
-          sx={{ 
-            py: 3, 
-            position: 'relative', 
-            display: 'flex', 
-            alignItems: 'center', 
-          }}
-        >
-          {/* Logo centrado */}
-          <Box 
-            sx={{ 
-              position: 'absolute', 
-              left: '50%', 
-              top:'50%',
-              transform: 'translateX(-50%)', 
+            component="header"
+            sx={{
+              py: 3,
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            <Typography level="title-lg">
-              <img src={logo} alt="SOLTICEM" style={{ width: '275px', height: 'auto' }} />
-            </Typography>
+            {/* Logo centrado */}
+            <Box
+              sx={{
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              <Typography level="title-lg">
+                <img
+                  src={logo}
+                  alt="SOLTICEM"
+                  style={{ width: "275px", height: "auto" }}
+                />
+              </Typography>
+            </Box>
+
+            {/* Toggle alineado a la derecha */}
+            <Box sx={{ ml: "auto" }}>
+              <ColorSchemeToggle />
+            </Box>
           </Box>
-          
-          {/* Toggle alineado a la derecha */}
-          <Box sx={{ ml: 'auto'  }}>
-            <ColorSchemeToggle />
-          </Box>
-        </Box>
 
           <Box
             component="main"
             sx={{
-              my: 'auto',
+              my: "auto",
               py: 2,
               pb: 5,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 2,
               width: 400,
-              maxWidth: '100%',
-              mx: 'auto',
-              borderRadius: 'sm',
-              '& form': {
-                display: 'flex',
-                flexDirection: 'column',
+              maxWidth: "100%",
+              mx: "auto",
+              borderRadius: "sm",
+              "& form": {
+                display: "flex",
+                flexDirection: "column",
                 gap: 2,
               },
               [`& .MuiFormLabel-asterisk`]: {
-                visibility: 'hidden',
+                visibility: "hidden",
               },
             }}
           >
@@ -194,38 +199,46 @@ export default function JoySignInSideTemplate() {
             </Stack>
 
             <Stack sx={{ gap: 4, mt: 2 }}>
-            <form onSubmit={handleSubmit}>
-          <FormControl required>
-            <FormLabel>Usuario</FormLabel>
-            <Input type="email" name="email" slotProps={{ input: { maxLength: 40 }}} />
-          </FormControl>
-          <FormControl required>
-            <FormLabel>Contraseña</FormLabel>
-            <Input type="password" name="password" slotProps={{ input: { maxLength: 40 }}} /> {/* Cambiado de "contrasena" a "password" */}
-          </FormControl>
-          <Stack sx={{ gap: 2, mt: 2 }}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              {/* <Checkbox size="sm" label="Recordar credenciales" name="persistent" /> */}
-              <Link level="title-sm" href="#replace-with-a-link">
-                {/* Forgot your password? */}
-              </Link>
-            </Box>
-            <Button type="submit" fullWidth>
-              Ingresar
-            </Button>
-          </Stack>
-        </form>
-
+              <form onSubmit={handleSubmit}>
+                <FormControl required>
+                  <FormLabel>Usuario</FormLabel>
+                  <Input
+                    type="email"
+                    name="email"
+                    slotProps={{ input: { maxLength: 40 } }}
+                  />
+                </FormControl>
+                <FormControl required>
+                  <FormLabel>Contraseña</FormLabel>
+                  <Input
+                    type="password"
+                    name="password"
+                    slotProps={{ input: { maxLength: 40 } }}
+                  />{" "}
+                  {/* Cambiado de "contrasena" a "password" */}
+                </FormControl>
+                <Stack sx={{ gap: 2, mt: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    {/* <Checkbox size="sm" label="Recordar credenciales" name="persistent" /> */}
+                    <Link level="title-sm" href="#replace-with-a-link">
+                      {/* Forgot your password? */}
+                    </Link>
+                  </Box>
+                  <Button type="submit" fullWidth>
+                    Ingresar
+                  </Button>
+                </Stack>
+              </form>
             </Stack>
           </Box>
           <Box component="footer" sx={{ py: 3 }}>
-            <Typography level="body-xs" sx={{ textAlign: 'center' }}>
+            <Typography level="body-xs" sx={{ textAlign: "center" }}>
               © Copyright SOLTICEM {new Date().getFullYear()}
             </Typography>
           </Box>
@@ -233,28 +246,28 @@ export default function JoySignInSideTemplate() {
       </Box>
       <Box
         sx={(theme) => ({
-          height: '100%',
-          position: 'fixed',
+          height: "100%",
+          position: "fixed",
           right: 0,
           top: 0,
           bottom: 0,
-          left: { xs: 0, md: '50vw' },
+          left: { xs: 0, md: "50vw" },
           transition:
-            'background-image var(--Transition-duration), left var(--Transition-duration) !important',
-          transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
-          backgroundColor: 'background.level1',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+            "background-image var(--Transition-duration), left var(--Transition-duration) !important",
+          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+          backgroundColor: "background.level1",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           backgroundImage:
-           'url(https://www.extrasoft.es/wp-content/uploads/2022/10/5-TECNOLOGIAS-980x560.jpg)',
-          [theme.getColorSchemeSelector('dark')]: {
+            "url(https://www.extrasoft.es/wp-content/uploads/2022/10/5-TECNOLOGIAS-980x560.jpg)",
+          [theme.getColorSchemeSelector("dark")]: {
             backgroundImage:
-            'url(https://fundacionih.es/wp-content/uploads/2024/04/tech-devices-icons-connected-digital-planet-earth-scaled.jpg)',
+              "url(https://fundacionih.es/wp-content/uploads/2024/04/tech-devices-icons-connected-digital-planet-earth-scaled.jpg)",
           },
         })}
       />
-       <ToastContainer />
+      <ToastContainer />
     </CssVarsProvider>
   );
 }

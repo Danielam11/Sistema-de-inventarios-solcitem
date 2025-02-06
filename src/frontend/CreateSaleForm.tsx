@@ -36,6 +36,10 @@ interface CreateSaleFormProps {
 export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   const [usuarioId, setUsuarioId] = useState<number | "">("");
   const [clienteId, setClienteId] = useState<number | "">("");
+  const [tipoIdentificacion, setTipoIdentificacion] = useState("CEDULA");
+  const [identificacion, setIdentificacion] = useState("");
+
+  const [medioPago, setMedioPago] = useState<string>("EFECTIVO"); // Nuevo estado
   const [productos, setProductos] = useState<
     {
       productoId: number;
@@ -54,7 +58,6 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
     number | null
   >(null);
   const [total, setTotal] = useState(0);
-
   const [newClient, setNewClient] = useState({
     identificacion: "",
     nombre: "",
@@ -62,6 +65,35 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
     telefono: "",
     email: "",
   });
+  // Validar Cédula
+  const validarCedula = (cedula: string): boolean => {
+    if (!cedula || cedula.length !== 10) return false;
+    const provincia = parseInt(cedula.substring(0, 2));
+    const digitoVerificador = parseInt(cedula.substring(9));
+
+    if (provincia < 1 || provincia > 24) return false;
+
+    let sum = 0;
+    for (let i = 0; i < 9; i++) {
+      const coeficiente = i % 2 === 0 ? 2 : 1;
+      let valor = parseInt(cedula.charAt(i)) * coeficiente;
+      sum += valor >= 10 ? valor - 9 : valor;
+    }
+
+    const calculado = sum % 10 === 0 ? 0 : 10 - (sum % 10);
+    return calculado === digitoVerificador;
+  };
+
+  // Validar RUC
+  const validarRUC = (ruc: string): boolean => {
+    if (!ruc || ruc.length !== 13) return false;
+    const provincia = parseInt(ruc.substring(0, 2), 10);
+    const tipoPersona = parseInt(ruc.charAt(2), 10);
+    const establecimiento = parseInt(ruc.substring(10), 10);
+    if (provincia < 1 || provincia > 24 || establecimiento === 0) return false;
+
+    return tipoPersona < 6 ? validarCedula(ruc.substring(0, 10)) : true;
+  };
 
   function notifySuccess(message: string) {
     toast.success(message, {
@@ -230,6 +262,8 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   // Manejar el envío del formulario
   const handleSubmit = async () => {
     console.log("handleSubmit se ha ejecutado"); // Mensaje de depuración
+    console.log("Tipo de Identificación:", tipoIdentificacion);
+    console.log("Identificación:", identificacion);
     try {
       // Validar campos obligatorios del cliente
       if (
@@ -248,11 +282,17 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         return;
       }
 
-      // Validar formato de identificación (ejemplo: mínimo 5 caracteres)
-      if (newClient.identificacion.length < 8) {
-        notifyError("La identificacion debe tener minimo 8 caracteres ");
+      if (tipoIdentificacion === "CEDULA" && !validarCedula(identificacion)) {
+        toast.error("⚠️ Cédula inválida. Verifique e intente nuevamente.");
         return;
       }
+      if (tipoIdentificacion === "RUC" && !validarRUC(identificacion)) {
+        toast.error("⚠️ RUC inválido. Verifique e intente nuevamente.");
+        return;
+      }
+
+      toast.success("✅ Cliente guardado correctamente.");
+
       // Validar formato de teléfono (entre 10 y 15 caracteres)
       if (newClient.telefono.length < 10 || newClient.telefono.length > 15) {
         notifyError("El teléfono debe tener entre 10 y 15 caracteres.");
@@ -324,6 +364,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
           usuarioId: Number(usuarioId),
           clienteId: Number(clienteIdFinal),
           total: total,
+          medioPago: medioPago, // Se envía el medio de pago
         }),
       });
 
@@ -371,6 +412,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       setUsuarioId("");
       setClienteId("");
       setProductos([{ productoId: 0, cantidad: 1 }]);
+      setMedioPago("EFECTIVO"); // Reiniciar el medio de pago por defecto
       setNewClient({
         identificacion: "",
         nombre: "",
@@ -385,17 +427,6 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   };
 
   // Validación en tiempo real para la identificación
-  const handleIdentificacionChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = e.target.value;
-    setNewClient({ ...newClient, identificacion: value });
-
-    // Validar longitud mínima
-    if (value.length > 0 && value.length < 5) {
-      toast.error("La identificación debe tener al menos 5 caracteres.");
-    }
-  };
 
   return (
     <Box sx={{ padding: 1 }}>
@@ -405,22 +436,43 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
           Datos del titular
         </Typography>
         <Grid container spacing={3}>
+          {/* Campo de tipo de identificación */}
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <FormLabel sx={{ fontSize: "0.875rem" }}>
+                Tipo de Identificación *
+              </FormLabel>
+              <Select
+                value={tipoIdentificacion}
+                onChange={(event, newValue) => {
+                  setTipoIdentificacion(newValue as "CEDULA" | "RUC");
+                  setIdentificacion(""); // Resetear input
+                }}
+              >
+                <Option value="CEDULA">Cédula</Option>
+                <Option value="RUC">RUC</Option>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Campos con map */}
           {[
-            { label: "Identificación *", key: "identificacion",maxLength: 13 },
-            { label: "Nombre Completo *", key: "nombre",maxLength: 40 },
-            { label: "Dirección", key: "direccion",maxLength: 40 },
-            { label: "Teléfono *", key: "telefono",maxLength: 10 },
-          ].map(({ label, key,maxLength }) => (
+            { label: "Identificación *", key: "identificacion", maxLength: 13 },
+            { label: "Nombre Completo *", key: "nombre", maxLength: 40 },
+            { label: "Dirección", key: "direccion", maxLength: 40 },
+            { label: "Teléfono *", key: "telefono", maxLength: 10 },
+          ].map(({ label, key, maxLength }) => (
             <Grid item xs={12} sm={6} md={3} key={key}>
               <FormControl fullWidth>
                 <FormLabel sx={{ fontSize: "0.875rem" }}>{label}</FormLabel>
                 <Input
                   size="sm"
                   value={newClient[key]}
-                  onChange={(e) =>
-                    setNewClient({ ...newClient, [key]: e.target.value })
-                  }
-                  slotProps={{ input: { maxLength } }}
+                  onChange={(e) => {
+                    setNewClient({ ...newClient, [key]: e.target.value });
+                    setIdentificacion(e.target.value); // Actualiza el estado de identificacion
+                  }}
+                  slotProps={{ input: { maxLength: 13 } }}
                 />
               </FormControl>
             </Grid>
@@ -553,11 +605,39 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         {/* Tabla de IVA, Total y Guardar Venta */}
         <Table sx={{ mt: 1, width: "100%", fontSize: "0.8rem" }}>
           <tbody>
-            {/* Fila del IVA */}
+            {/* Fila del IVA y Medio de Pago en el mismo Box */}
             <tr style={{ height: "28px" }}>
-              <td style={{ width: "50%" }}>
-                <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <FormControl sx={{ minWidth: "100px" }}>
+              <td style={{ width: "50%", borderTop: 0 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end", // Alinea el grupo al final de la fila
+                    alignItems: "center", // Alinea verticalmente los elementos
+                    width: "100%",
+                  }}
+                >
+                  {/* Medio de Pago */}
+                  <FormControl sx={{ minWidth: "150px", marginRight: "16px" }}>
+                    <FormLabel sx={{ fontSize: "0.75rem" }}>
+                      Medio de Pago
+                    </FormLabel>
+                    <Select
+                      value={medioPago}
+                      onChange={(e, newValue) => setMedioPago(newValue)}
+                      sx={{
+                        minHeight: "26px",
+                        fontSize: "0.9rem",
+                        padding: "2px 6px",
+                        minWidth: "200px",
+                      }}
+                    >
+                      <Option value="TRANSFERENCIA">Transferencia</Option>
+                      <Option value="EFECTIVO">Efectivo</Option>
+                    </Select>
+                  </FormControl>
+
+                  {/* IVA */}
+                  <FormControl sx={{ minWidth: "150px" }}>
                     <FormLabel sx={{ fontSize: "0.75rem" }}>IVA</FormLabel>
                     <Select
                       name="iva"
@@ -569,7 +649,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                       }}
                       sx={{
                         minHeight: "26px",
-                        fontSize: "1 rem",
+                        fontSize: "0.9rem",
                         padding: "2px 6px",
                         minWidth: "200px",
                       }}
