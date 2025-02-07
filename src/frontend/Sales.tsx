@@ -563,15 +563,20 @@ export default function SalesTable() {
       return;
     }
 
-    // Convertir las fechas seleccionadas a formato YYYY-MM-DD
-    const fromDateFormatted = new Date(fromDate).toISOString().split("T")[0];
-    const toDateFormatted = new Date(toDate).toISOString().split("T")[0];
+    const fromDateFormatted = fromDate;
+    const toDateFormatted = toDate;
 
     const filtered = sales.filter((sale) => {
-      // Convertir la fecha de venta al mismo formato YYYY-MM-DD
+      // Convertir la fecha de la venta a la zona horaria local sin afectar la hora
       const saleDateFormatted = new Date(sale.fecha_venta)
-        .toISOString()
-        .split("T")[0];
+        .toLocaleDateString("es-EC", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .split("/")
+        .reverse()
+        .join("-"); // Convierte a YYYY-MM-DD
 
       return (
         saleDateFormatted >= fromDateFormatted &&
@@ -581,7 +586,6 @@ export default function SalesTable() {
 
     setFilteredSales(filtered);
   };
-
   const totalVentasFiltradas = filteredSales.reduce(
     (sum, sale) => sum + parseFloat(sale.total || 0),
     0
@@ -811,7 +815,7 @@ export default function SalesTable() {
             <FormControl>
               <FormLabel>Identificación</FormLabel>
               <Input
-                slotProps={{ input: { maxLength: 13 }}}
+                slotProps={{ input: { maxLength: 13 } }}
                 value={newClient.identificacion}
                 onChange={(e) =>
                   setNewClient({ ...newClient, identificacion: e.target.value })

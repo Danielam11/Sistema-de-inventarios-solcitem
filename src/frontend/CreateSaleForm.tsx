@@ -37,7 +37,6 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   const [usuarioId, setUsuarioId] = useState<number | "">("");
   const [clienteId, setClienteId] = useState<number | "">("");
   const [tipoIdentificacion, setTipoIdentificacion] = useState("CEDULA");
-  const [identificacion, setIdentificacion] = useState("");
 
   const [medioPago, setMedioPago] = useState<string>("EFECTIVO"); // Nuevo estado
   const [productos, setProductos] = useState<
@@ -67,35 +66,74 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   });
   // Validar Cédula
   const validarCedula = (cedula: string): boolean => {
-    if (!cedula || cedula.length !== 10) return false;
-    const provincia = parseInt(cedula.substring(0, 2));
-    const digitoVerificador = parseInt(cedula.substring(9));
-
-    if (provincia < 1 || provincia > 24) return false;
-
-    let sum = 0;
-    for (let i = 0; i < 9; i++) {
-      const coeficiente = i % 2 === 0 ? 2 : 1;
-      let valor = parseInt(cedula.charAt(i)) * coeficiente;
-      sum += valor >= 10 ? valor - 9 : valor;
+    // Verificar que la cédula tenga 10 dígitos y sean solo números
+    if (!cedula || cedula.length !== 10 || !/^\d+$/.test(cedula)) {
+      return false;
     }
 
-    const calculado = sum % 10 === 0 ? 0 : 10 - (sum % 10);
+    // Extraer los dos primeros dígitos (provincia)
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) {
+      return false; // Las provincias en Ecuador van del 1 al 24
+    }
+
+    // Extraer el último dígito (dígito verificador)
+    const digitoVerificador = parseInt(cedula.charAt(9), 10);
+
+    // Algoritmo de validación (módulo 10)
+    let suma = 0;
+    for (let i = 0; i < 9; i++) {
+      let digito = parseInt(cedula.charAt(i), 10);
+      if (i % 2 === 0) {
+        digito *= 2;
+        if (digito > 9) {
+          digito -= 9;
+        }
+      }
+      suma += digito;
+    }
+
+    const calculado = suma % 10 === 0 ? 0 : 10 - (suma % 10);
     return calculado === digitoVerificador;
   };
-
   // Validar RUC
   const validarRUC = (ruc: string): boolean => {
-    if (!ruc || ruc.length !== 13) return false;
-    const provincia = parseInt(ruc.substring(0, 2), 10);
-    const tipoPersona = parseInt(ruc.charAt(2), 10);
-    const establecimiento = parseInt(ruc.substring(10), 10);
-    if (provincia < 1 || provincia > 24 || establecimiento === 0) return false;
+    // Verificar que el RUC tenga 13 dígitos y sean solo números
+    if (!ruc || ruc.length !== 13 || !/^\d+$/.test(ruc)) {
+      return false;
+    }
 
-    return tipoPersona < 6 ? validarCedula(ruc.substring(0, 10)) : true;
+    // Extraer los dos primeros dígitos (provincia)
+    const provincia = parseInt(ruc.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) {
+      return false; // Las provincias en Ecuador van del 1 al 24
+    }
+
+    // Extraer el tercer dígito (tipo de persona)
+    const tipoPersona = parseInt(ruc.charAt(2), 10);
+
+    // Validar según el tipo de persona
+    if (tipoPersona < 0 || tipoPersona > 5) {
+      return false; // Los tipos de persona van del 0 al 5
+    }
+
+    // Validar el establecimiento (últimos 3 dígitos)
+    const establecimiento = parseInt(ruc.substring(10, 13), 10);
+    if (establecimiento < 1) {
+      return false; // El establecimiento no puede ser 000
+    }
+
+    // Si es persona natural (tipoPersona < 6), validar como cédula
+    if (tipoPersona < 6) {
+      return validarCedula(ruc.substring(0, 10));
+    }
+
+    // Para otros tipos de RUC (empresas, etc.), no se aplica la validación de cédula
+    return true;
   };
 
   function notifySuccess(message: string) {
+    if (!message) return;
     toast.success(message, {
       position: "top-right",
       autoClose: 2000,
@@ -107,6 +145,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   }
 
   function notifyError(message: string) {
+    if (!message) return;
     toast.error(message, {
       position: "top-right",
       autoClose: 2000,
@@ -263,7 +302,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
   const handleSubmit = async () => {
     console.log("handleSubmit se ha ejecutado"); // Mensaje de depuración
     console.log("Tipo de Identificación:", tipoIdentificacion);
-    console.log("Identificación:", identificacion);
+    console.log("Identificación:", newClient.identificacion);
     try {
       // Validar campos obligatorios del cliente
       if (
@@ -282,20 +321,24 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
         return;
       }
 
-      if (tipoIdentificacion === "CEDULA" && !validarCedula(identificacion)) {
-        toast.error("⚠️ Cédula inválida. Verifique e intente nuevamente.");
+      if (
+        tipoIdentificacion === "CEDULA" &&
+        !validarCedula(newClient.identificacion)
+      ) {
+        notifyError("⚠️ Cédula inválida. Verifique e intente nuevamente.");
         return;
       }
-      if (tipoIdentificacion === "RUC" && !validarRUC(identificacion)) {
-        toast.error("⚠️ RUC inválido. Verifique e intente nuevamente.");
+      if (
+        tipoIdentificacion === "RUC" &&
+        !validarRUC(newClient.identificacion)
+      ) {
+        notifyError("⚠️ RUC inválido. Verifique e intente nuevamente.");
         return;
       }
-
-      toast.success("✅ Cliente guardado correctamente.");
 
       // Validar formato de teléfono (entre 10 y 15 caracteres)
       if (newClient.telefono.length < 10 || newClient.telefono.length > 15) {
-        notifyError("El teléfono debe tener entre 10 y 15 caracteres.");
+        notifyError("El teléfono debe tener 10 caracteres.");
         return;
       }
 
@@ -446,7 +489,7 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                 value={tipoIdentificacion}
                 onChange={(event, newValue) => {
                   setTipoIdentificacion(newValue as "CEDULA" | "RUC");
-                  setIdentificacion(""); // Resetear input
+                  setNewClient({ ...newClient, identificacion: "" }); // Resetear input
                 }}
               >
                 <Option value="CEDULA">Cédula</Option>
@@ -455,9 +498,28 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
             </FormControl>
           </Grid>
 
-          {/* Campos con map */}
+          {/* Campo de Identificación */}
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <FormLabel sx={{ fontSize: "0.875rem" }}>
+                Identificación *
+              </FormLabel>
+              <Input
+                size="sm"
+                value={newClient.identificacion}
+                onChange={(e) => {
+                  setNewClient({
+                    ...newClient,
+                    identificacion: e.target.value,
+                  });
+                }}
+                slotProps={{ input: { maxLength: 13 } }}
+              />
+            </FormControl>
+          </Grid>
+
+          {/* Otros campos */}
           {[
-            { label: "Identificación *", key: "identificacion", maxLength: 13 },
             { label: "Nombre Completo *", key: "nombre", maxLength: 40 },
             { label: "Dirección", key: "direccion", maxLength: 40 },
             { label: "Teléfono *", key: "telefono", maxLength: 10 },
@@ -470,14 +532,14 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                   value={newClient[key]}
                   onChange={(e) => {
                     setNewClient({ ...newClient, [key]: e.target.value });
-                    setIdentificacion(e.target.value); // Actualiza el estado de identificacion
                   }}
-                  slotProps={{ input: { maxLength: 13 } }}
+                  slotProps={{ input: { maxLength } }}
                 />
               </FormControl>
             </Grid>
           ))}
 
+          {/* Campo de Correo */}
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <FormLabel sx={{ fontSize: "0.875rem" }}>Correo</FormLabel>

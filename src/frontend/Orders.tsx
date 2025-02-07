@@ -81,9 +81,9 @@ export default function OrderTable() {
       return;
     }
 
-    // Convertir las fechas seleccionadas a formato YYYY-MM-DD
-    const fromDateFormatted = new Date(fromDate).toISOString().split("T")[0];
-    const toDateFormatted = new Date(toDate).toISOString().split("T")[0];
+    // Mantener la fecha sin afectar la hora
+    const fromDateFormatted = fromDate;
+    const toDateFormatted = toDate;
 
     console.log(
       "📆 Filtrando desde:",
@@ -93,10 +93,16 @@ export default function OrderTable() {
     );
 
     const filtered = pedidosOriginales.filter((pedido) => {
-      // Convertir fecha_pedido a formato YYYY-MM-DD
+      // Convertir la fecha del pedido a "YYYY-MM-DD" sin afectar la hora
       const orderDateFormatted = new Date(pedido.fecha_pedido)
-        .toISOString()
-        .split("T")[0];
+        .toLocaleDateString("es-EC", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .split("/")
+        .reverse()
+        .join("-"); // Convierte a YYYY-MM-DD
 
       console.log("➡️ Pedido con fecha:", orderDateFormatted);
 

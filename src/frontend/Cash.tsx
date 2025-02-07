@@ -37,18 +37,38 @@ export default function SalesSummary() {
       return;
     }
 
-    const fromDateFormatted = new Date(fromDate).toISOString().split("T")[0];
-    const toDateFormatted = new Date(toDate).toISOString().split("T")[0];
+    // Mantener la fecha sin afectar la hora
+    const fromDateFormatted = fromDate;
+    const toDateFormatted = toDate;
+
+    console.log(
+      "📆 Filtrando desde:",
+      fromDateFormatted,
+      "hasta:",
+      toDateFormatted
+    );
 
     const filtered = sales.filter((sale) => {
+      // Convertir la fecha de la venta a formato "YYYY-MM-DD" sin afectar la hora
       const saleDateFormatted = new Date(sale.fecha_venta)
-        .toISOString()
-        .split("T")[0];
+        .toLocaleDateString("es-EC", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .split("/")
+        .reverse()
+        .join("-"); // Convierte a YYYY-MM-DD
+
+      console.log("➡️ Venta con fecha:", saleDateFormatted);
+
       return (
         saleDateFormatted >= fromDateFormatted &&
         saleDateFormatted <= toDateFormatted
       );
     });
+
+    console.log("✅ Ventas filtradas:", filtered);
 
     setFilteredSales(filtered);
   };
