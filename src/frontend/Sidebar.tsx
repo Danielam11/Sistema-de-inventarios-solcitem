@@ -157,7 +157,7 @@ export default function Sidebar() {
           }}
         />
 
-        <Typography level="title-lg">Solcitem</Typography>
+        <Typography level="title-lg">Solticem</Typography>
         <ColorSchemeToggle sx={{ ml: "auto" }} />
       </Box>
       {/* <Input

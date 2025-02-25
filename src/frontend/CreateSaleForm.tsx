@@ -468,9 +468,52 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
       notifyError(error.message || "No se pudo crear la venta o los detalles.");
     }
   };
+  const handleClientSearch = async (identificacion: string) => {
+    if (!identificacion) return;
 
-  // Validación en tiempo real para la identificación
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/clients/identificacion/${identificacion}`
+      );
 
+      if (!response.ok) {
+        setNewClient({
+          identificacion,
+          nombre: "",
+          direccion: "",
+          telefono: "",
+          email: "",
+        });
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data) {
+        setNewClient({
+          identificacion: data.identificacion,
+          nombre: data.nombre || "",
+          direccion: data.direccion || "",
+          telefono: data.telefono || "",
+          email: data.email || "",
+        });
+        setClienteId(data.cliente_id);
+      }
+    } catch (error) {
+      console.error("Error buscando cliente:", error);
+    }
+  };
+
+  const [searchProduct, setSearchProduct] = useState(""); // Estado para la búsqueda de productos
+
+  const handleProductSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchProduct(e.target.value);
+  };
+
+  // Filtrar productos según la búsqueda
+  const filteredProducts = products.filter((producto) =>
+    producto.nombre.toLowerCase().includes(searchProduct.toLowerCase())
+  );
   return (
     <Box sx={{ padding: 1 }}>
       {/* Contenedor Cliente */}
@@ -508,10 +551,9 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
                 size="sm"
                 value={newClient.identificacion}
                 onChange={(e) => {
-                  setNewClient({
-                    ...newClient,
-                    identificacion: e.target.value,
-                  });
+                  const identificacion = e.target.value;
+                  setNewClient({ ...newClient, identificacion });
+                  handleClientSearch(identificacion);
                 }}
                 slotProps={{ input: { maxLength: 13 } }}
               />
@@ -782,82 +824,90 @@ export default function CreateSaleForm({ onSaleCreated }: CreateSaleFormProps) {
 
       {/* Modal para seleccionar productos */}
       <Modal open={openModal} onClose={handleCloseModal}>
-        <Box sx={{ width: "80%", maxWidth: 1000, margin: "auto", mt: 5 }}>
-          <Sheet sx={{ width: "100%", overflow: "auto", borderRadius: "sm" }}>
+        <Sheet
+          sx={{
+            width: "80%",
+            maxWidth: 1000,
+            margin: "auto",
+            mt: 5,
+            p: 3,
+            borderRadius: "sm",
+            boxShadow: "lg",
+          }}
+        >
+          {/* Campo de búsqueda */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <FormLabel>Búsqueda de productos</FormLabel>
+            <Input
+              size="sm"
+              placeholder="Buscar por nombre..."
+              value={searchProduct}
+              onChange={handleProductSearch}
+            />
+          </FormControl>
+
+          {/* Tabla con scroll */}
+          <Box sx={{ maxHeight: "300px", overflowY: "auto" }}>
             <Table stickyHeader sx={{ tableLayout: "auto" }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: "center" }}>Producto Id</th>
-                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                    Nombre
-                  </th>
-                  <th style={{ maxWidth: "210px", wordWrap: "break-word" }}>
-                    Descripción
-                  </th>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
                   <th>Precio Compra</th>
                   <th>Precio Venta</th>
-                  <th style={{ maxWidth: "150px", textAlign: "center" }}>
-                    Cantidad
-                  </th>
-                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                    Marca
-                  </th>
-                  <th style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                    Modelo
-                  </th>
-                  <th style={{ maxWidth: "210px", wordWrap: "break-word" }}>
-                    Categoría
-                  </th>
+                  <th>Cantidad</th>
+                  <th>Marca</th>
+                  <th>Modelo</th>
+                  <th>Categoría</th>
                   <th style={{ textAlign: "center" }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((producto) => (
-                  <tr key={producto.producto_id}>
-                    <td style={{ textAlign: "center", width: "50px" }}>
-                      {producto.producto_id}
-                    </td>
-                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                      {producto.nombre}
-                    </td>
-                    <td style={{ maxWidth: "210px", wordWrap: "break-word" }}>
-                      {producto.descripcion}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      {producto.precio_compra}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      {producto.precio_venta}
-                    </td>
-                    <td style={{ maxWidth: "150px", textAlign: "center" }}>
-                      {producto.cantidad}
-                    </td>
-                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                      {producto.marca_nombre}
-                    </td>
-                    <td style={{ maxWidth: "150px", wordWrap: "break-word" }}>
-                      {producto.modelo_nombre}
-                    </td>
-                    <td style={{ maxWidth: "210px", wordWrap: "break-word" }}>
-                      {producto.categoria_nombre}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          handleSelectProduct(producto.producto_id)
-                        }
-                      >
-                        Seleccionar
-                      </Button>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((producto) => (
+                    <tr key={producto.producto_id}>
+                      <td style={{ textAlign: "center", width: "50px" }}>
+                        {producto.producto_id}
+                      </td>
+                      <td>{producto.nombre}</td>
+                      <td>{producto.descripcion}</td>
+                      <td>{producto.precio_compra}</td>
+                      <td>{producto.precio_venta}</td>
+                      <td style={{ textAlign: "center" }}>
+                        {producto.cantidad}
+                      </td>
+                      <td>{producto.marca_nombre}</td>
+                      <td>{producto.modelo_nombre}</td>
+                      <td>{producto.categoria_nombre}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleSelectProduct(producto.producto_id)
+                          }
+                        >
+                          Seleccionar
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={10}
+                      style={{ textAlign: "center", padding: "10px" }}
+                    >
+                      No se encontraron productos.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </Table>
-          </Sheet>
-        </Box>
+          </Box>
+        </Sheet>
       </Modal>
+
       <ToastContainer />
     </Box>
   );

@@ -25,7 +25,6 @@ export default function SalesSummary() {
       const response = await fetch("http://localhost:3000/api/sales");
       const data = await response.json();
       setSales(data);
-      setFilteredSales(data);
     } catch (error) {
       console.error("Error fetching sales:", error);
     }

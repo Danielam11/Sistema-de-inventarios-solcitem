@@ -14,6 +14,8 @@ import MenuItem from "@mui/joy/MenuItem";
 import Dropdown from "@mui/joy/Dropdown";
 import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
+import Select from "@mui/joy/Select";
+import Option from "@mui/joy/Option";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreHorizRoundedIcon from "@mui/icons-material/MoreHorizRounded";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
@@ -136,6 +138,7 @@ export default function SuppliersTable({
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [tipoIdentificacion, setTipoIdentificacion] = useState("RUC");
   const [newSupplier, setNewSupplier] = useState({
     identification: "",
     name: "",
@@ -143,7 +146,53 @@ export default function SuppliersTable({
     phone: "",
     email: "",
   });
+  const resetForm = () => {
+    setNewSupplier({
+      identification: "",
+      name: "",
+      address: "",
+      phone: "",
+      email: "",
+    });
+  };
+  // Función para validar Cédula
+  const validarCedula = (cedula: string): boolean => {
+    if (!cedula || cedula.length !== 10 || !/^\d+$/.test(cedula)) return false;
+    const provincia = parseInt(cedula.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) return false;
+    const digitoVerificador = parseInt(cedula.charAt(9), 10);
+    let suma = 0;
+    for (let i = 0; i < 9; i++) {
+      let digito = parseInt(cedula.charAt(i), 10);
+      if (i % 2 === 0) {
+        digito *= 2;
+        if (digito > 9) digito -= 9;
+      }
+      suma += digito;
+    }
+    return (suma % 10 === 0 ? 0 : 10 - (suma % 10)) === digitoVerificador;
+  };
 
+  // Función para validar RUC
+  const validarRUC = (ruc: string): boolean => {
+    if (!ruc || ruc.length !== 13 || !/^\d+$/.test(ruc)) return false;
+    const provincia = parseInt(ruc.substring(0, 2), 10);
+    if (provincia < 1 || provincia > 24) return false;
+    const tipoPersona = parseInt(ruc.charAt(2), 10);
+    if (tipoPersona < 0 || tipoPersona > 5) return false;
+    const establecimiento = parseInt(ruc.substring(10, 13), 10);
+    if (establecimiento < 1) return false;
+    return tipoPersona < 6 ? validarCedula(ruc.substring(0, 10)) : true;
+  };
+
+  // Notificaciones
+  function notifySuccess(message: string) {
+    toast.success(message, { position: "top-right", autoClose: 2000 });
+  }
+
+  function notifyError(message: string) {
+    toast.error(message, { position: "top-right", autoClose: 2000 });
+  }
   const handleCreateChange = (e: {
     target: { name: string; value: string };
   }) => {
@@ -236,6 +285,7 @@ export default function SuppliersTable({
 
   const handleModalClose = () => {
     setEditingSupplier(null);
+    resetForm();
     setIsModalOpen(false);
   };
 
@@ -298,7 +348,14 @@ export default function SuppliersTable({
       notifyError("El teléfono debe tener exactamente 10 dígitos.");
       return;
     }
-
+    if (tipoIdentificacion === "CEDULA" && !validarCedula(identification)) {
+      notifyError("⚠️ Cédula inválida. Verifique e intente nuevamente.");
+      return;
+    }
+    if (tipoIdentificacion === "RUC" && !validarRUC(identification)) {
+      notifyError("⚠️ RUC inválido. Verifique e intente nuevamente.");
+      return;
+    }
     console.log("Datos enviados al servicio:", newSupplier); // Imprime los datos que se enviarán
 
     try {
@@ -518,6 +575,16 @@ export default function SuppliersTable({
         <ModalDialog>
           <Typography component="h2">Añadir Nuevo Proveedor</Typography>
           <Box sx={{ mt: 2 }}>
+            <FormControl>
+              <FormLabel>Tipo de Identificación</FormLabel>
+              <Select
+                value={tipoIdentificacion}
+                onChange={(e, v) => setTipoIdentificacion(v)}
+              >
+                <Option value="CEDULA">Cédula</Option>
+                <Option value="RUC">RUC</Option>
+              </Select>
+            </FormControl>
             <FormControl>
               <FormLabel>Identificación *</FormLabel>
               <Input
